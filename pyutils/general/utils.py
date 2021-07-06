@@ -43,6 +43,19 @@ def get_timetaken_fstring(num_seconds: Union[int, float]) -> str:
     return " ".join(timetaken_components).strip()
 
 
+def round_off_as_string(number: Union[int, float], round_by: int) -> str:
+    if round_by < 0:
+        raise ValueError("The `round_by` parameter must be >= 0")
+    if round_by == 0:
+        return str(round(number))
+    number_stringified = str(round(number, round_by))
+    decimal_places_filled = len(number_stringified.split('.')[-1])
+    decimal_places_to_fill = round_by - decimal_places_filled
+    for _ in range(decimal_places_to_fill):
+        number_stringified += '0'
+    return number_stringified
+
+
 def commafy_number(number: Union[int, float]) -> str:
     """
     Adds commas to number for better readability.
