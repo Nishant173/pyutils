@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Union
+from functools import reduce
 import random
 
 import numpy as np
@@ -24,6 +25,30 @@ def dataframe_to_list(data: pd.DataFrame) -> Union[List[Dict], List]:
     if data.empty:
         return []
     return data.to_dict(orient='records')
+
+
+def merge_dataframes(
+        dataframes: List[pd.DataFrame],
+        how: str,
+        on: List[Union[int, float, str]],
+    ) -> pd.DataFrame:
+    """
+    Merges list of DataFrames given.
+    Parameters:
+        - dataframes (list): List of DataFrames to merge.
+        - how (str): The type of merge. Options: ['left', 'right', 'outer', 'inner', 'cross']
+        - on (list): List of columns to merge on.
+    """
+    df_merged = reduce(
+        lambda df_left, df_right: pd.merge(
+            left=df_left,
+            right=df_right,
+            how=how,
+            on=on,
+        ),
+        dataframes,
+    )
+    return df_merged
 
 
 def drop_columns_if_exists(
