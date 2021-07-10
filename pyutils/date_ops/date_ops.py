@@ -79,14 +79,19 @@ def parse_datetime_string(datetime_string: str) -> datetime.datetime:
     return dt_obj
 
 
-def utc_to_ist(dt_obj: datetime.datetime) -> datetime.datetime:
-    """Adds 5 hours and 30 minutes"""
-    return dt_obj + timedelta(hours=5, minutes=30)
-
-
-def ist_to_utc(dt_obj: datetime.datetime) -> datetime.datetime:
-    """Subtracts 5 hours and 30 minutes"""
-    return dt_obj - timedelta(hours=5, minutes=30)
+def convert_datetime_object(dt_obj: datetime.datetime, conversion: str) -> datetime.datetime:
+    """
+    Converts datetime object based on the `conversion` metric.
+    Parameters:
+        - dt_obj (datetime): Datetime object
+        - conversion (str): Conversion metric. Options: ['ist_to_utc', 'utc_to_ist']
+    """
+    conversion_options = ['ist_to_utc', 'utc_to_ist']
+    if conversion == 'ist_to_utc':
+        return dt_obj - timedelta(hours=5, minutes=30)
+    elif conversion == 'utc_to_ist':
+        return dt_obj + timedelta(hours=5, minutes=30)
+    raise ValueError(f"Expected `conversion` to be in {conversion_options}, but got '{conversion}'")
 
 
 def convert_to_naive_timezone(dt_obj: datetime.datetime) -> datetime.datetime:
