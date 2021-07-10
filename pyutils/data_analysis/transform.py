@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, List, Optional, Union
 from functools import reduce
 import random
 
@@ -66,10 +66,41 @@ def drop_columns_if_exists(
     return df
 
 
+def transform_datetime_columns(
+        data: pd.DataFrame,
+        func: Callable,
+        subset: Optional[List[Union[int, float, str]]] = None,
+        column_prefix: Optional[str] = '',
+        column_suffix: Optional[str] = '',
+    ) -> pd.DataFrame:
+    """
+    Takes in a DataFrame, and applies the given function to all 'datetime64' columns in the DataFrame.
+    Parameters:
+        - data (DataFrame): Pandas DataFrame
+        - func (callable): Callable Python function
+        - subset (list): Subset of 'datetime64' columns to apply the function to (optional)
+        - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
+        - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
+    """
+    df = data.copy(deep=True)
+    if subset:
+        for column in subset:
+            new_column = f"{column_prefix}{column}{column_suffix}"
+            df[new_column] = df[column].apply(func=func)
+    else:
+        columns_with_datetimes = data.select_dtypes(include=['datetime64']).columns.tolist()
+        for column in columns_with_datetimes:
+            new_column = f"{column_prefix}{column}{column_suffix}"
+            df[new_column] = df[column].apply(func=func)
+    return df
+
+
 def prettify_datetime_columns(
         data: pd.DataFrame,
         include_time: bool,
         subset: Optional[List[Union[int, float, str]]] = None,
+        column_prefix: Optional[str] = '',
+        column_suffix: Optional[str] = '',
     ) -> pd.DataFrame:
     """
     Takes in Pandas DataFrame, and converts all 'datetime64' columns to a more human readable format.
@@ -77,16 +108,18 @@ def prettify_datetime_columns(
         - data (DataFrame): Pandas DataFrame
         - include_time (bool): Includes time element if set to True
         - subset (list): Subset of datetime columns to prettify (optional)
+        - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
+        - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     """
     df = data.copy(deep=True)
     formatter = "%d %B, %Y %I:%M %p" if include_time else "%d %B, %Y"
-    if subset:
-        for column in subset:
-            df[column] = df[column].dt.strftime(formatter)
-    else:
-        columns_with_datetimes = data.select_dtypes(include=['datetime64']).columns.tolist()
-        for column in columns_with_datetimes:
-            df[column] = df[column].dt.strftime(formatter)
+    df = transform_datetime_columns(
+        data=df,
+        func=lambda dt_obj: dt_obj.strftime(formatter),
+        subset=subset,
+        column_prefix=column_prefix,
+        column_suffix=column_suffix,
+    )
     return df
 
 
