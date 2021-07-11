@@ -4,20 +4,20 @@ from datetime import timedelta
 import pandas as pd
 from randomtimestamp import randomtimestamp
 
-TIMESTAMP_FORMAT = "%Y%m%d%H%M%S" # Will be converted to an integer after parsing
+TIMESTAMP_INTEGER_FORMAT = "%Y%m%d%H%M%S" # Will be converted to an integer after parsing
 
 
-def get_current_timestamp() -> int:
+def get_current_timestamp_as_integer() -> int:
     dt_obj = datetime.datetime.now()
-    ts_now = dt_obj.strftime(TIMESTAMP_FORMAT)
+    ts_now = dt_obj.strftime(TIMESTAMP_INTEGER_FORMAT)
     return int(ts_now)
 
 
-def get_random_timestamp() -> int:
+def get_random_timestamp_as_integer() -> int:
     ts_random = randomtimestamp(
         start_year=1900,
         end_year=datetime.datetime.now().year - 1,
-        pattern=TIMESTAMP_FORMAT,
+        pattern=TIMESTAMP_INTEGER_FORMAT,
     )
     return int(ts_random)
 

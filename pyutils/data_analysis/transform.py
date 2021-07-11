@@ -5,7 +5,7 @@ import random
 import numpy as np
 import pandas as pd
 
-from pyutils.date_ops.date_ops import get_current_timestamp
+from pyutils.date_ops.date_ops import get_current_timestamp_as_integer
 from pyutils.general.casing import (
     lcc2sc,
     lcc2ucc,
@@ -270,7 +270,7 @@ def randomly_fill_categorical_nans(
     categorical_variables = df.select_dtypes(include='object').columns.tolist()
     if subset:
         categorical_variables = list(set(categorical_variables).intersection(set(subset)))
-    null_indicator_string = f"NULL-{get_current_timestamp()}-{random.randint(1000, 9999)}"
+    null_indicator_string = f"NULL-{get_current_timestamp_as_integer()}-{random.randint(1000, 9999)}"
     for cv in categorical_variables:
         if df[cv].isnull().sum() > 0:
             df[cv].fillna(value=null_indicator_string, inplace=True)
