@@ -4,6 +4,8 @@ from datetime import timedelta
 import pandas as pd
 from randomtimestamp import randomtimestamp
 
+DATE_STRING_FORMAT = "%Y-%m-%d" # Eg: "2020-03-19"
+DATETIME_STRING_FORMAT = "%Y-%m-%d %H:%M:%S" # Eg: "2020-03-19 17:45:08"
 TIMESTAMP_INTEGER_FORMAT = "%Y%m%d%H%M%S" # Will be converted to an integer after parsing
 
 
@@ -65,7 +67,7 @@ def parse_date_string(date_string: str) -> datetime.datetime:
     Parses date string of format 'yyyy-mm-dd' into datetime object.
     >>> parse_date_string(date_string="2020-03-28")
     """
-    dt_obj = datetime.datetime.strptime(date_string, "%Y-%m-%d")
+    dt_obj = datetime.datetime.strptime(date_string, DATE_STRING_FORMAT)
     return dt_obj
 
 
@@ -75,7 +77,7 @@ def parse_datetime_string(datetime_string: str) -> datetime.datetime:
     Note: The 'hour' in the `datetime_string` must be of 24 hour format (from 0-23).
     >>> parse_datetime_string(datetime_string="2020-03-28 17:53:04")
     """
-    dt_obj = datetime.datetime.strptime(datetime_string, "%Y-%m-%d %H:%M:%S")
+    dt_obj = datetime.datetime.strptime(datetime_string, DATETIME_STRING_FORMAT)
     return dt_obj
 
 
