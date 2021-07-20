@@ -37,7 +37,7 @@ def period_to_datetime(period_obj: pd._libs.tslibs.period.Period) -> datetime.da
     return dt_obj
 
 
-def convert_to_timestamp(
+def convert_to_datetime(
         date_string: str,
         hour: int,
         minute: int,
@@ -62,6 +62,18 @@ def convert_to_timestamp(
     return dt_obj
 
 
+def to_date_string(dt_obj: datetime.datetime) -> str:
+    """Converts datetime object to date string of format 'yyyy-mm-dd'"""
+    date_string = dt_obj.strftime(DATE_STRING_FORMAT)
+    return date_string
+
+
+def to_datetime_string(dt_obj: datetime.datetime) -> str:
+    """Converts datetime object to datetime string of format 'yyyy-mm-dd hh:mm:ss'"""
+    datetime_string = dt_obj.strftime(DATETIME_STRING_FORMAT)
+    return datetime_string
+
+
 def parse_date_string(date_string: str) -> datetime.datetime:
     """
     Parses date string of format 'yyyy-mm-dd' into datetime object.
@@ -79,23 +91,3 @@ def parse_datetime_string(datetime_string: str) -> datetime.datetime:
     """
     dt_obj = datetime.datetime.strptime(datetime_string, DATETIME_STRING_FORMAT)
     return dt_obj
-
-
-def convert_datetime_object(dt_obj: datetime.datetime, conversion: str) -> datetime.datetime:
-    """
-    Converts datetime object based on the `conversion` metric.
-    Parameters:
-        - dt_obj (datetime): Datetime object
-        - conversion (str): Conversion metric. Options: ['ist_to_utc', 'utc_to_ist']
-    """
-    conversion_options = ['ist_to_utc', 'utc_to_ist']
-    if conversion == 'ist_to_utc':
-        return dt_obj - timedelta(hours=5, minutes=30)
-    elif conversion == 'utc_to_ist':
-        return dt_obj + timedelta(hours=5, minutes=30)
-    raise ValueError(f"Expected `conversion` to be in {conversion_options}, but got '{conversion}'")
-
-
-def convert_to_naive_timezone(dt_obj: datetime.datetime) -> datetime.datetime:
-    dt_obj_converted = dt_obj.replace(tzinfo=None)
-    return dt_obj_converted
