@@ -12,6 +12,17 @@ def is_dataframe_full(data: pd.DataFrame) -> bool:
     return (is_not_empty & has_no_missing_values)
 
 
+def get_common_columns(dataframes: List[pd.DataFrame]) -> Union[List[Union[int, float, str]], List]:
+    """Returns list of the common columns present in all the given DataFrames"""
+    num_dataframes = len(dataframes)
+    all_columns = []
+    for df in dataframes:
+        all_columns.extend(df.columns.tolist())
+    dict_value_counts_by_column = pd.Series(data=all_columns).value_counts().to_dict()
+    common_columns = [column for column, value_count in dict_value_counts_by_column.items() if value_count == num_dataframes]
+    return common_columns
+
+
 def get_column_availability_info(
         data: pd.DataFrame,
         expected_columns: List[Union[int, float, str]],
