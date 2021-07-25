@@ -12,14 +12,23 @@ def is_dataframe_full(data: pd.DataFrame) -> bool:
     return (is_not_empty & has_no_missing_values)
 
 
-def get_common_columns(dataframes: List[pd.DataFrame]) -> Union[List[Union[int, float, str]], List]:
-    """Returns list of the common columns present in all the given DataFrames"""
-    num_dataframes = len(dataframes)
+def get_column_count(dataframes: List[pd.DataFrame]) -> pd.DataFrame:
+    """
+    Returns DataFrame having count of all columns present in the given DataFrames.
+    The returned DataFrame will have the following columns: ['Column', 'Count']
+    """
     all_columns = []
     for df in dataframes:
         all_columns.extend(df.columns.tolist())
-    dict_value_counts_by_column = pd.Series(data=all_columns).value_counts().to_dict()
-    common_columns = [column for column, value_count in dict_value_counts_by_column.items() if value_count == num_dataframes]
+    df_column_count = pd.Series(data=all_columns).value_counts().rename('Count').reset_index().rename(mapper={'index': 'Column'}, axis=1)
+    return df_column_count
+
+
+def get_common_columns(dataframes: List[pd.DataFrame]) -> Union[List[Union[int, float, str]], List]:
+    """Returns list of the common columns present in all the given DataFrames"""
+    num_dataframes = len(dataframes)
+    df_column_count = get_column_count(dataframes=dataframes)
+    common_columns = df_column_count[df_column_count['Count'] == num_dataframes]['Column'].tolist()
     return common_columns
 
 
