@@ -250,34 +250,32 @@ def add_ranking_column(
 def add_dense_ranking_column(
         data: pd.DataFrame,
         rank_column_name: Union[int, float, str],
-        rank_by: Union[int, float, str],
-        ascending: bool,
+        rank_by: List[Union[int, float, str]],
+        ascending: List[bool],
     ) -> pd.DataFrame:
     """
-    Adds ranking column to given DataFrame, based on the `rank_by` column.
+    Adds ranking column to given DataFrame, based on the `rank_by` column/s.
     The ranking is continuous, but will not necessarily be unique for each row.
     
     Parameters:
         - data (DataFrame): Pandas DataFrame.
         - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking).
-        - rank_by (int | float | str): Column to rank by.
-        - ascending (bool): True if you want to sort the `rank_by` column in ascending order; False otherwise.
+        - rank_by (list): List of columns to rank by.
+        - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`).
     """
     df_ranked = add_ranking_column(
         data=data,
         rank_column_name=rank_column_name,
-        rank_by=[rank_by],
-        ascending=[ascending],
+        rank_by=rank_by,
+        ascending=ascending,
     )
     dense_rankings = [1]
-    values_used_for_ranking = df_ranked[rank_by].tolist()
+    values_used_for_ranking = list(df_ranked[rank_by].itertuples(index=False))
     prev = values_used_for_ranking[0]
     for value in values_used_for_ranking[1:]:
         latest_rank_assigned = dense_rankings[-1]
-        if prev == value:
-            dense_rankings.append(latest_rank_assigned)
-        else:
-            dense_rankings.append(latest_rank_assigned + 1)
+        ranking_for_row = latest_rank_assigned if prev == value else latest_rank_assigned + 1
+        dense_rankings.append(ranking_for_row)
         prev = value
     df_ranked[rank_column_name] = dense_rankings
     return df_ranked
