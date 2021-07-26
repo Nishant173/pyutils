@@ -1,4 +1,5 @@
 from typing import Callable, Dict, List, Optional, Union
+from collections import Counter
 from functools import reduce
 import random
 
@@ -218,27 +219,12 @@ def round_off_columns(
     return df
 
 
-def add_ranking_column(
+def __row_number(
         data: pd.DataFrame,
         rank_column_name: Union[int, float, str],
         rank_by: List[Union[int, float, str]],
         ascending: List[bool],
     ) -> pd.DataFrame:
-    """
-    Adds ranking column to given DataFrame, based on `rank_by` column/s.
-    The ranking is continuous and will be unique for each row.
-
-    Parameters:
-        - data (DataFrame): Pandas DataFrame
-        - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking)
-        - rank_by (list): List of columns to rank by
-        - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`)
-    """
-    if len(rank_by) != len(ascending):
-        raise ValueError(
-            "Expected `rank_by` and `ascending` to be of same length,"
-            f" but got lengths {len(rank_by)} and {len(ascending)} respectively"
-        )
     df_ranked = data.sort_values(by=rank_by, ascending=ascending, ignore_index=True)
     rankings = np.arange(start=1, stop=len(df_ranked) + 1, step=1)
     df_ranked[rank_column_name] = rankings
@@ -247,23 +233,13 @@ def add_ranking_column(
     return df_ranked
 
 
-def add_dense_ranking_column(
+def __dense_rank(
         data: pd.DataFrame,
         rank_column_name: Union[int, float, str],
         rank_by: List[Union[int, float, str]],
         ascending: List[bool],
     ) -> pd.DataFrame:
-    """
-    Adds ranking column to given DataFrame, based on the `rank_by` column/s.
-    The ranking is continuous, but will not necessarily be unique for each row.
-    
-    Parameters:
-        - data (DataFrame): Pandas DataFrame.
-        - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking).
-        - rank_by (list): List of columns to rank by.
-        - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`).
-    """
-    df_ranked = add_ranking_column(
+    df_ranked = __row_number(
         data=data,
         rank_column_name=rank_column_name,
         rank_by=rank_by,
@@ -278,6 +254,93 @@ def add_dense_ranking_column(
         dense_rankings.append(ranking_for_row)
         prev = value
     df_ranked[rank_column_name] = dense_rankings
+    return df_ranked
+
+
+def __non_dense_rank(
+        data: pd.DataFrame,
+        rank_column_name: Union[int, float, str],
+        rank_by: List[Union[int, float, str]],
+        ascending: List[bool],
+    ) -> pd.DataFrame:
+    df_ranked = __row_number(
+        data=data,
+        rank_column_name=rank_column_name,
+        rank_by=rank_by,
+        ascending=ascending,
+    )
+    non_dense_rankings = [1]
+    values_used_for_ranking = list(df_ranked[rank_by].itertuples(index=False))
+    prev = values_used_for_ranking[0]
+    for value in values_used_for_ranking[1:]:
+        latest_rank_assigned = non_dense_rankings[-1]
+        ranking_for_row = latest_rank_assigned if prev == value else latest_rank_assigned + Counter(non_dense_rankings)[latest_rank_assigned]
+        non_dense_rankings.append(ranking_for_row)
+        prev = value
+    df_ranked[rank_column_name] = non_dense_rankings
+    return df_ranked
+
+
+def add_ranking_column(
+        data: pd.DataFrame,
+        rank_column_name: Union[int, float, str],
+        rank_by: List[Union[int, float, str]],
+        ascending: List[bool],
+        method: str,
+    ) -> pd.DataFrame:
+    """
+    Adds ranking column to given DataFrame, based on `rank_by` column/s.
+
+    Parameters:
+        - data (DataFrame): Pandas DataFrame.
+        - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking).
+        - rank_by (list): List of columns to rank by.
+        - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`).
+        - method (str): Type of ranking to be used. Options: ['row_number', 'dense_rank', 'non_dense_rank'].
+    
+    >>> add_ranking_column(
+        data=pd.DataFrame(data={
+            'Name': ['AAA', 'CCC', 'DDD', 'BBB'],
+            'Age': [27, 21, 24, 20],
+            'Gender': ['F', 'F', 'M', 'F'],
+        }),
+        rank_column_name='Ranking',
+        rank_by=['Gender', 'Age'],
+        ascending=[True, False],
+        method='row_number',
+    )
+    """
+    method_options = ['row_number', 'dense_rank', 'non_dense_rank']
+    if method not in method_options:
+        raise ValueError(f"Expected `method` to be in {method_options}, but got '{method}'")
+    if len(rank_by) != len(ascending):
+        raise ValueError(
+            "Expected `rank_by` and `ascending` to be of same length,"
+            f" but got lengths {len(rank_by)} and {len(ascending)} respectively."
+        )
+    
+    df = data.copy(deep=True)
+    if method == 'row_number':
+        df_ranked = __row_number(
+            data=df,
+            rank_column_name=rank_column_name,
+            rank_by=rank_by,
+            ascending=ascending,
+        )
+    elif method == 'dense_rank':
+        df_ranked = __dense_rank(
+            data=df,
+            rank_column_name=rank_column_name,
+            rank_by=rank_by,
+            ascending=ascending,
+        )
+    elif method == 'non_dense_rank':
+        df_ranked = __non_dense_rank(
+            data=df,
+            rank_column_name=rank_column_name,
+            rank_by=rank_by,
+            ascending=ascending,
+        )    
     return df_ranked
 
 
