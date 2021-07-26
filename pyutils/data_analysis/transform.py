@@ -27,6 +27,13 @@ def dataframe_to_list(data: pd.DataFrame) -> Union[List[Dict], List]:
     return data.to_dict(orient='records')
 
 
+def stringify_columns(data: pd.DataFrame) -> pd.DataFrame:
+    """Converts all column names of the given DataFrame to strings (in case some of them are int/float)"""
+    df = data.copy(deep=True)
+    df.columns = list(map(str, df.columns.tolist()))
+    return df
+
+
 def merge_dataframes(
         dataframes: List[pd.DataFrame],
         how: str,
@@ -218,7 +225,8 @@ def add_ranking_column(
         ascending: List[bool],
     ) -> pd.DataFrame:
     """
-    Adds ranking column to given DataFrame, based on `rank_by` column/s
+    Adds ranking column to given DataFrame, based on `rank_by` column/s.
+    The ranking is continuous and will be unique for each row.
 
     Parameters:
         - data (DataFrame): Pandas DataFrame
@@ -236,6 +244,42 @@ def add_ranking_column(
     df_ranked[rank_column_name] = rankings
     column_order = [rank_column_name] + df_ranked.drop(labels=[rank_column_name], axis=1).columns.tolist()
     df_ranked = df_ranked.loc[:, column_order]
+    return df_ranked
+
+
+def add_dense_ranking_column(
+        data: pd.DataFrame,
+        rank_column_name: Union[int, float, str],
+        rank_by: Union[int, float, str],
+        ascending: bool,
+    ) -> pd.DataFrame:
+    """
+    Adds ranking column to given DataFrame, based on the `rank_by` column.
+    The ranking is continuous, but will not necessarily be unique for each row.
+    
+    Parameters:
+        - data (DataFrame): Pandas DataFrame.
+        - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking).
+        - rank_by (int | float | str): Column to rank by.
+        - ascending (bool): True if you want to sort the `rank_by` column in ascending order; False otherwise.
+    """
+    df_ranked = add_ranking_column(
+        data=data,
+        rank_column_name=rank_column_name,
+        rank_by=[rank_by],
+        ascending=[ascending],
+    )
+    dense_rankings = [1]
+    values_used_for_ranking = df_ranked[rank_by].tolist()
+    prev = values_used_for_ranking[0]
+    for value in values_used_for_ranking[1:]:
+        latest_rank_assigned = dense_rankings[-1]
+        if prev == value:
+            dense_rankings.append(latest_rank_assigned)
+        else:
+            dense_rankings.append(latest_rank_assigned + 1)
+        prev = value
+    df_ranked[rank_column_name] = dense_rankings
     return df_ranked
 
 
