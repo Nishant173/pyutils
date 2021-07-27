@@ -219,32 +219,17 @@ def round_off_columns(
     return df
 
 
-def __row_number(
-        data: pd.DataFrame,
-        rank_column_name: Union[int, float, str],
-        rank_by: List[Union[int, float, str]],
-        ascending: List[bool],
-    ) -> pd.DataFrame:
-    df_ranked = data.sort_values(by=rank_by, ascending=ascending, ignore_index=True)
-    rankings = np.arange(start=1, stop=len(df_ranked) + 1, step=1)
-    df_ranked[rank_column_name] = rankings
-    column_order = [rank_column_name] + df_ranked.drop(labels=[rank_column_name], axis=1).columns.tolist()
-    df_ranked = df_ranked.loc[:, column_order]
-    return df_ranked
-
-
-def __dense_rank(
-        data: pd.DataFrame,
-        rank_column_name: Union[int, float, str],
-        rank_by: List[Union[int, float, str]],
-        ascending: List[bool],
-    ) -> pd.DataFrame:
-    df_ranked = __row_number(
-        data=data,
-        rank_column_name=rank_column_name,
-        rank_by=rank_by,
-        ascending=ascending,
+def __get_row_number_rankings(df_ranked: pd.DataFrame) -> List[int]:
+    row_number_rankings = list(
+        np.arange(start=1, stop=len(df_ranked) + 1, step=1)
     )
+    return row_number_rankings
+
+
+def __get_dense_rankings(
+        df_ranked: pd.DataFrame,
+        rank_by: List[Union[int, float, str]],
+    ) -> List[int]:
     dense_rankings = [1]
     values_used_for_ranking = list(df_ranked[rank_by].itertuples(index=False))
     prev = values_used_for_ranking[0]
@@ -253,22 +238,13 @@ def __dense_rank(
         ranking_for_row = latest_rank_assigned if prev == value else latest_rank_assigned + 1
         dense_rankings.append(ranking_for_row)
         prev = value
-    df_ranked[rank_column_name] = dense_rankings
-    return df_ranked
+    return dense_rankings
 
 
-def __non_dense_rank(
-        data: pd.DataFrame,
-        rank_column_name: Union[int, float, str],
+def __get_non_dense_rankings(
+        df_ranked: pd.DataFrame,
         rank_by: List[Union[int, float, str]],
-        ascending: List[bool],
-    ) -> pd.DataFrame:
-    df_ranked = __row_number(
-        data=data,
-        rank_column_name=rank_column_name,
-        rank_by=rank_by,
-        ascending=ascending,
-    )
+    ) -> List[int]:
     non_dense_rankings = [1]
     values_used_for_ranking = list(df_ranked[rank_by].itertuples(index=False))
     prev = values_used_for_ranking[0]
@@ -277,8 +253,7 @@ def __non_dense_rank(
         ranking_for_row = latest_rank_assigned if prev == value else latest_rank_assigned + Counter(non_dense_rankings)[latest_rank_assigned]
         non_dense_rankings.append(ranking_for_row)
         prev = value
-    df_ranked[rank_column_name] = non_dense_rankings
-    return df_ranked
+    return non_dense_rankings
 
 
 def add_ranking_column(
@@ -309,6 +284,24 @@ def add_ranking_column(
         ascending=[True, False],
         method='row_number',
     )
+
+    |    | column   |   row_number |   dense_rank |   non_dense_rank |
+    |---:|:---------|-------------:|-------------:|-----------------:|
+    |  0 | a        |            1 |            1 |                1 |
+    |  1 | a        |            2 |            1 |                1 |
+    |  2 | a        |            3 |            1 |                1 |
+    |  3 | a        |            4 |            1 |                1 |
+    |  4 | b        |            5 |            2 |                5 |
+    |  5 | b        |            6 |            2 |                5 |
+    |  6 | c        |            7 |            3 |                7 |
+    |  7 | d        |            8 |            4 |                8 |
+    |  8 | d        |            9 |            4 |                8 |
+    |  9 | e        |           10 |            5 |               10 |
+    | 10 | e        |           11 |            5 |               10 |
+    | 11 | f        |           12 |            6 |               12 |
+    | 12 | g        |           13 |            7 |               13 |
+    | 13 | g        |           14 |            7 |               13 |
+
     """
     method_options = ['row_number', 'dense_rank', 'non_dense_rank']
     if method not in method_options:
@@ -318,29 +311,16 @@ def add_ranking_column(
             "Expected `rank_by` and `ascending` to be of same length,"
             f" but got lengths {len(rank_by)} and {len(ascending)} respectively."
         )
-    
-    df = data.copy(deep=True)
+    df_ranked = data.sort_values(by=rank_by, ascending=ascending, ignore_index=True).copy(deep=True)
     if method == 'row_number':
-        df_ranked = __row_number(
-            data=df,
-            rank_column_name=rank_column_name,
-            rank_by=rank_by,
-            ascending=ascending,
-        )
+        rankings = __get_row_number_rankings(df_ranked=df_ranked)
     elif method == 'dense_rank':
-        df_ranked = __dense_rank(
-            data=df,
-            rank_column_name=rank_column_name,
-            rank_by=rank_by,
-            ascending=ascending,
-        )
+        rankings = __get_dense_rankings(df_ranked=df_ranked, rank_by=rank_by)
     elif method == 'non_dense_rank':
-        df_ranked = __non_dense_rank(
-            data=df,
-            rank_column_name=rank_column_name,
-            rank_by=rank_by,
-            ascending=ascending,
-        )    
+        rankings = __get_non_dense_rankings(df_ranked=df_ranked, rank_by=rank_by)
+    df_ranked[rank_column_name] = rankings
+    column_order = [rank_column_name] + df_ranked.drop(labels=[rank_column_name], axis=1).columns.tolist()
+    df_ranked = df_ranked.loc[:, column_order]
     return df_ranked
 
 
