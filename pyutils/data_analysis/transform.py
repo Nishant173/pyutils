@@ -256,7 +256,7 @@ def __get_non_dense_rankings(
     return non_dense_rankings
 
 
-def add_ranking_column(
+def rank_and_sort(
         data: pd.DataFrame,
         rank_column_name: Union[int, float, str],
         rank_by: List[Union[int, float, str]],
@@ -264,7 +264,7 @@ def add_ranking_column(
         method: str,
     ) -> pd.DataFrame:
     """
-    Adds ranking column to given DataFrame, based on `rank_by` column/s.
+    Adds ranking column and sorts records based on the `rank_by` column/s.
 
     Parameters:
         - data (DataFrame): Pandas DataFrame.
@@ -273,18 +273,6 @@ def add_ranking_column(
         - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`).
         - method (str): Type of ranking to be used. Options: ['row_number', 'dense_rank', 'non_dense_rank'].
     
-    >>> add_ranking_column(
-        data=pd.DataFrame(data={
-            'Name': ['AAA', 'CCC', 'DDD', 'BBB'],
-            'Age': [27, 21, 24, 20],
-            'Gender': ['F', 'F', 'M', 'F'],
-        }),
-        rank_column_name='Ranking',
-        rank_by=['Gender', 'Age'],
-        ascending=[True, False],
-        method='row_number',
-    )
-
     |    | column   |   row_number |   dense_rank |   non_dense_rank |
     |---:|:---------|-------------:|-------------:|-----------------:|
     |  0 | a        |            1 |            1 |                1 |
@@ -301,7 +289,6 @@ def add_ranking_column(
     | 11 | f        |           12 |            6 |               12 |
     | 12 | g        |           13 |            7 |               13 |
     | 13 | g        |           14 |            7 |               13 |
-
     """
     method_options = ['row_number', 'dense_rank', 'non_dense_rank']
     if method not in method_options:
