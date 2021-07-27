@@ -17,4 +17,5 @@ pytz==2021.1
 randomtimestamp==2.0.0
 six==1.16.0
 sqlparse==0.4.1
+tabulate==0.8.9
 typing-extensions==3.10.0.0
