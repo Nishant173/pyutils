@@ -91,16 +91,16 @@ def excel_file_to_bytes(filepath: str) -> ByteString:
     return bytes_obj
 
 
-def excel_file_to_django_http_response(source_filepath_with_ext: str) -> HttpResponse:
+def excel_file_to_django_http_response(filepath: str) -> HttpResponse:
     """
-    Takes filepath to an Excel file, and returns Django HTTP Response object containing said Excel file.
+    Takes `filepath` to an Excel file, and returns Django HTTP Response object of the same.
     """
-    source_filename_with_ext = get_basename_from_filepath(filepath=source_filepath_with_ext)
-    content = open(file=source_filepath_with_ext, mode='rb')
+    filename = get_basename_from_filepath(filepath=filepath)
+    content = open(file=filepath, mode='rb')
     response = HttpResponse(
         content=content,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
-    response['Content-Disposition'] = f'attachment; filename="{source_filename_with_ext}"'
-    response['X-Sendfile'] = source_filename_with_ext
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response['X-Sendfile'] = filename
     return response
