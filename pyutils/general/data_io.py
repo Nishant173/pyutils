@@ -1,5 +1,6 @@
 from typing import Any, List
 import json
+import ntpath
 import os
 
 import joblib
@@ -8,6 +9,12 @@ import pandas as pd
 
 def get_extension(filepath: str) -> str:
     return os.path.splitext(filepath)[-1][1:]
+
+
+def get_basename_from_filepath(filepath: str) -> str:
+    """Returns base-name of the file in the given `filepath` (along with the extension)"""
+    head, tail = ntpath.split(p=filepath)
+    return tail or ntpath.basename(head)
 
 
 def get_filepaths(
