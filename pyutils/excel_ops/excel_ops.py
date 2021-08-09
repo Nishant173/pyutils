@@ -11,6 +11,8 @@ import io
 from django.http import HttpResponse
 import pandas as pd
 
+from pyutils.general.data_io import get_basename_from_filepath
+
 Column = Union[int, float, str] # Type-hint for columns in a Pandas DataFrame
 
 
@@ -87,3 +89,18 @@ def excel_file_to_bytes(filepath: str) -> ByteString:
     writer.save()
     bytes_obj = bio.getvalue()
     return bytes_obj
+
+
+def excel_file_to_django_http_response(source_filepath_with_ext: str) -> HttpResponse:
+    """
+    Takes filepath to an Excel file, and returns Django HTTP Response object containing said Excel file.
+    """
+    source_filename_with_ext = get_basename_from_filepath(filepath=source_filepath_with_ext)
+    content = open(file=source_filepath_with_ext, mode='rb')
+    response = HttpResponse(
+        content=content,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response['Content-Disposition'] = f'attachment; filename="{source_filename_with_ext}"'
+    response['X-Sendfile'] = source_filename_with_ext
+    return response
