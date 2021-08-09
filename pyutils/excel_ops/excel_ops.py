@@ -87,27 +87,3 @@ def excel_file_to_bytes(filepath: str) -> ByteString:
     writer.save()
     bytes_obj = bio.getvalue()
     return bytes_obj
-
-
-def excel_file_to_django_http_response(
-        source_filepath: str,
-        destination_filename: str,
-    ) -> HttpResponse:
-    """
-    Takes filepath to an Excel file, and returns Django HTTP Response object containing said Excel file.
-    Works with filepaths having the 'xlsx' extension.
-    
-    Parameters:
-        - source_filepath (str): Filepath to the source Excel file (along with extension).
-        - destination_filename (str): Filename of the destination Excel file (along with extension).
-    
-    Note: Does not work with formatted Excel files i.e; files with coloring, charts, etc. Does not capture coloring or charts.
-    """
-    bytes_obj = excel_file_to_bytes(filepath=source_filepath)
-    response = HttpResponse(
-        content=bytes_obj,
-        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-    response['Content-Disposition'] = f'attachment; filename="{destination_filename}"'
-    response['X-Sendfile'] = destination_filename
-    return response
