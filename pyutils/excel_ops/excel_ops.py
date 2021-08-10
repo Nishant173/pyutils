@@ -16,7 +16,7 @@ from pyutils.general.data_io import get_basename_from_filepath
 Column = Union[int, float, str] # Type-hint for columns in a Pandas DataFrame
 
 
-def style_dataframe_by_cell(
+def style_dataframe_conditionally(
         df_style_obj: Any,
         props: List[Dict[str, Union[pd.Series, List[Column], Dict[str, str], None]]],
     ) -> Any:
@@ -32,7 +32,7 @@ def style_dataframe_by_cell(
         'column3': [np.random.randint(-40, 15) for _ in range(num_rows)],
         'column4': [np.random.randint(-5, 5) for _ in range(num_rows)],
     })
-    >>> style_dataframe_by_cell(
+    >>> style_dataframe_conditionally(
         df_style_obj=df.style,
         props=[
             {
