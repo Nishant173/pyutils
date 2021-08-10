@@ -120,12 +120,12 @@ def save_styled_dataframes(
         sheet_name_to_df_styled: Dict[str, Any],
     ) -> None:
     """
-    Saves Pandas Styler object/s to an Excel file, which could have multiple sheets (one for each DataFrame).
+    Saves Pandas Styler object/s to an Excel file, which could have multiple sheets (one for each Styler object).
     >>> save_styled_dataframes(
         destination_filepath="resulting_file.xlsx",
         sheet_name_to_df_styled={
-            "sheet1": df_styled_1,
-            "sheet2": df_styled_2,
+            "sheet1": df_style_obj_1,
+            "sheet2": df_style_obj_2,
         },
     )
     """
