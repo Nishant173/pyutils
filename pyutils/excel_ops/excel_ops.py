@@ -89,28 +89,30 @@ def style_dataframe_by_cell(
     return df_styled
 
 
-def style_dataframe(
-        data: pd.DataFrame,
+def style_dataframe_with_background_gradient(
+        df_style_obj: Any,
         blue_white_red: Optional[List[Column]] = None,
         blues: Optional[List[Column]] = None,
         greens: Optional[List[Column]] = None,
         red_yellow_green: Optional[List[Column]] = None,
         summer: Optional[List[Column]] = None,
     ) -> Any:
-    """Styles DataFrame and returns Styler object (of class `pandas.io.formats.style.Styler`)"""
-    df = data.copy(deep=True)
-    df_style_obj = df.style
+    """
+    Takes in Pandas Styler object (of class `pandas.io.formats.style.Styler`), and returns the same
+    after applying background gradient styles based on the given column subsets.
+    """
+    df_styled = df_style_obj.__copy__()
     if blue_white_red:
-        df_style_obj = df_style_obj.background_gradient(subset=blue_white_red, cmap='bwr')
+        df_styled = df_styled.background_gradient(subset=blue_white_red, cmap='bwr')
     if blues:
-        df_style_obj = df_style_obj.background_gradient(subset=blues, cmap='Blues')
+        df_styled = df_styled.background_gradient(subset=blues, cmap='Blues')
     if greens:
-        df_style_obj = df_style_obj.background_gradient(subset=greens, cmap='Greens')
+        df_styled = df_styled.background_gradient(subset=greens, cmap='Greens')
     if red_yellow_green:
-        df_style_obj = df_style_obj.background_gradient(subset=red_yellow_green, cmap='RdYlGn')
+        df_styled = df_styled.background_gradient(subset=red_yellow_green, cmap='RdYlGn')
     if summer:
-        df_style_obj = df_style_obj.background_gradient(subset=summer, cmap='summer')
-    return df_style_obj
+        df_styled = df_styled.background_gradient(subset=summer, cmap='summer')
+    return df_styled
 
 
 def save_styled_dataframes(
