@@ -71,6 +71,27 @@ def get_filepaths_multi_level(
     return filepaths
 
 
+def get_line_count_dataframe(
+        src_dir: str,
+        extensions: List[str],
+    ) -> pd.DataFrame:
+    """
+    Gets line-count of all filepaths from source directory (including all sub-directories).
+    Returns DataFrame having columns: ['Filepath', 'LineCount'].
+    >>> get_line_count_dataframe(src_dir="SOME_SRC_DIR", extensions=['py', 'js', 'txt'])
+    """
+    filepaths = get_filepaths_multi_level(src_dir=src_dir, extensions=extensions)
+    # Keys = filepaths, and values = line count in each file
+    dict_line_counts = {
+        filepath : get_line_count(filepath=filepath) for filepath in filepaths
+    }
+    df_line_counts = pd.DataFrame(data={
+        'Filepath': dict_line_counts.keys(),
+        'LineCount': dict_line_counts.values(),
+    })
+    return df_line_counts
+
+
 def pickle_load(filepath: str) -> Any:
     """Loads data from pickle file, via joblib module"""
     python_obj = joblib.load(filename=filepath)
