@@ -4,12 +4,6 @@ import random
 import numpy as np
 
 
-def get_line_count(filepath: str) -> int:
-    """Returns count of number of lines in the given file"""
-    num_lines = sum(1 for _ in open(file=filepath))
-    return num_lines
-
-
 def get_random_choice_except(choices: List[Any], exception: Any) -> Any:
     if exception not in choices:
         raise ValueError("The `exception` is not available in the given `choices`")

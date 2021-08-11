@@ -7,6 +7,12 @@ import joblib
 import pandas as pd
 
 
+def get_line_count(filepath: str) -> int:
+    """Returns count of number of lines in the given file"""
+    num_lines = sum(1 for _ in open(file=filepath))
+    return num_lines
+
+
 def get_extension(filepath: str) -> str:
     return os.path.splitext(filepath)[-1][1:]
 
@@ -30,6 +36,28 @@ def get_filepaths(
     filenames = os.listdir(src_dir)
     filenames = [filename for filename in filenames if get_extension(filename).lower() in extensions]
     filepaths = [os.path.join(src_dir, filename) for filename in filenames]
+    return filepaths
+
+
+def get_filepaths_multi_level(
+        src_dir: str,
+        extensions: List[str],
+    ) -> List[str]:
+    """
+    Gets list of all filepaths having particular extension/s from all files in all
+    sub-directories (if any) in the given source directory.
+    Note: The `src_dir` can be an r-string.
+    >>> get_filepaths_multi_level(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
+    """
+    extensions = list(map(lambda extension: extension.strip().lower(), extensions))
+    filepaths = []
+    for path, _, files in os.walk(src_dir):
+        for filename in files:
+            filepath = os.path.join(path, filename)
+            extension = get_extension(filepath=filepath)
+            extension = extension.strip().lower()
+            if extension in extensions:
+                filepaths.append(filepath)
     return filepaths
 
 
