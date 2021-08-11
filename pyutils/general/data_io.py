@@ -41,7 +41,7 @@ def get_filepaths(
         extensions: Optional[List[str]] = None,
     ) -> List[str]:
     """
-    Gets list of all filepaths having particular extension/s from source directory.
+    Gets list of all filepaths from source directory (in the immediate directory).
     Note: The `src_dir` can be an r-string.
     >>> get_filepaths(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
     """
@@ -57,8 +57,7 @@ def get_filepaths_multi_level(
         extensions: Optional[List[str]] = None,
     ) -> List[str]:
     """
-    Gets list of all filepaths having particular extension/s from all files in all
-    sub-directories (if any) in the given source directory.
+    Gets list of all filepaths from source directory (including all sub-directories).
     Note: The `src_dir` can be an r-string.
     >>> get_filepaths_multi_level(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
     """
