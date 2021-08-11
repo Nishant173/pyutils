@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Optional
 import json
 import ntpath
 import os
@@ -23,25 +23,38 @@ def get_basename_from_filepath(filepath: str) -> str:
     return tail or ntpath.basename(head)
 
 
+def filter_filepaths_by_extensions(
+        filepaths: List[str],
+        extensions: List[str],
+    ) -> List[str]:
+    extensions = list(
+        map(lambda extension: extension.strip().lower(), extensions)
+    )
+    filepaths_needed = list(
+        filter(lambda filepath: get_extension(filepath=filepath).strip().lower() in extensions, filepaths)
+    )
+    return filepaths_needed
+
+
 def get_filepaths(
         src_dir: str,
-        extensions: List[str],
+        extensions: Optional[List[str]] = None,
     ) -> List[str]:
     """
     Gets list of all filepaths having particular extension/s from source directory.
     Note: The `src_dir` can be an r-string.
     >>> get_filepaths(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
     """
-    extensions = [str(extension).strip().lower() for extension in extensions]
     filenames = os.listdir(src_dir)
-    filenames = [filename for filename in filenames if get_extension(filename).lower() in extensions]
     filepaths = [os.path.join(src_dir, filename) for filename in filenames]
+    if extensions is not None:
+        filepaths = filter_filepaths_by_extensions(filepaths=filepaths, extensions=extensions)
     return filepaths
 
 
 def get_filepaths_multi_level(
         src_dir: str,
-        extensions: List[str],
+        extensions: Optional[List[str]] = None,
     ) -> List[str]:
     """
     Gets list of all filepaths having particular extension/s from all files in all
@@ -49,15 +62,13 @@ def get_filepaths_multi_level(
     Note: The `src_dir` can be an r-string.
     >>> get_filepaths_multi_level(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
     """
-    extensions = list(map(lambda extension: extension.strip().lower(), extensions))
     filepaths = []
     for path, _, files in os.walk(src_dir):
         for filename in files:
             filepath = os.path.join(path, filename)
-            extension = get_extension(filepath=filepath)
-            extension = extension.strip().lower()
-            if extension in extensions:
-                filepaths.append(filepath)
+            filepaths.append(filepath)
+    if extensions is not None:
+        filepaths = filter_filepaths_by_extensions(filepaths=filepaths, extensions=extensions)
     return filepaths
 
 
