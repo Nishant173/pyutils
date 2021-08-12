@@ -11,7 +11,7 @@ from pyutils.data_analysis.transform import rank_and_sort
 
 def get_line_count(filepath: str) -> int:
     """Returns count of number of lines in the given file"""
-    num_lines = sum(1 for _ in open(file=filepath))
+    num_lines = sum(1 for _ in open(file=filepath, encoding="utf8"))
     return num_lines
 
 
