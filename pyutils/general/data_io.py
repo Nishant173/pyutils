@@ -42,6 +42,13 @@ def filter_filepaths_by_extensions(
     return filepaths_needed
 
 
+def get_unique_extensions(filepaths: List[str]) -> List[str]:
+    """Returns all unique extensions available in the list of filepaths given"""
+    all_extensions = list(map(get_extension, filepaths))
+    unique_extensions = sorted(list(set(all_extensions)))
+    return unique_extensions
+
+
 def __get_filepaths_at_first_level(src_dir: str) -> List[str]:
     folders_and_files_in_directory = os.listdir(src_dir)
     files_in_directory = list(
