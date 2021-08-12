@@ -4,8 +4,10 @@ import ntpath
 import os
 
 import joblib
+import numpy as np
 import pandas as pd
 from tinytag import TinyTag
+from tqdm import tqdm
 
 from pyutils.data_analysis.transform import rank_and_sort
 from pyutils.general.utils import get_timetaken_fstring
@@ -136,16 +138,16 @@ def get_media_metadata(filepaths: List[str]) -> pd.DataFrame:
     """
     bytes_per_mb = 1048576
     records = []
-    for filepath in filepaths:
+    for filepath in tqdm(filepaths):
         tiny_tag_obj = TinyTag.get(filepath)
         dict_obj = {}
         dict_obj['Filepath'] = filepath
         dict_obj['Basename'] = get_basename_from_filepath(filepath=filepath)
         dict_obj['Extension'] = get_extension(filepath=filepath)
         dict_obj['BitRate'] = tiny_tag_obj.bitrate
-        dict_obj['DurationInSeconds'] = int(tiny_tag_obj.duration)
-        dict_obj['Duration'] = get_timetaken_fstring(num_seconds=int(tiny_tag_obj.duration))
-        dict_obj['SizeInMb'] = round(tiny_tag_obj.filesize / bytes_per_mb, 3)
+        dict_obj['DurationInSeconds'] = None if tiny_tag_obj.duration is None else int(np.ceil(tiny_tag_obj.duration))
+        dict_obj['Duration'] = None if tiny_tag_obj.duration is None else get_timetaken_fstring(num_seconds=int(np.ceil(tiny_tag_obj.duration)))
+        dict_obj['SizeInMb'] = None if tiny_tag_obj.filesize is None else round(tiny_tag_obj.filesize / bytes_per_mb, 2)
         dict_obj['SampleRate'] = tiny_tag_obj.samplerate
         records.append(dict_obj)
     df_records = pd.DataFrame(data=records)
