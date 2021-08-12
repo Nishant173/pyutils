@@ -94,45 +94,7 @@ def get_filepaths(
     return filepaths
 
 
-def get_line_count_info(
-        src_dir: str,
-        extensions: Optional[List[str]] = None,
-        rank_by_line_count: Optional[bool] = False,
-    ) -> pd.DataFrame:
-    """
-    Gets line-count of all files from source directory (including all sub-directories).
-    Returns DataFrame having columns: ['Filepath', 'LineCount', 'Basename', 'Extension'].
-    If `rank_by_line_count` is set to True, then there will be an additional column called: 'RankByLineCount'.
-    
-    >>> get_line_count_info(
-        src_dir="SOME_SRC_DIR",
-        extensions=['py', 'js', 'txt'],
-        rank_by_line_count=True,
-    )
-    """
-    filepaths = get_filepaths(
-        src_dir=src_dir,
-        depth='all_levels',
-        extensions=extensions,
-    )
-    dict_line_counts = {
-        filepath : get_line_count(filepath=filepath) for filepath in filepaths
-    }
-    df_line_count_info = pd.DataFrame(data={
-        'Filepath': dict_line_counts.keys(),
-        'LineCount': dict_line_counts.values(),
-    })
-    df_line_count_info['Basename'] = df_line_count_info['Filepath'].apply(get_basename_from_filepath)
-    df_line_count_info['Extension'] = df_line_count_info['Filepath'].apply(get_extension)
-    if rank_by_line_count:
-        df_line_count_info = rank_and_sort(
-            data=df_line_count_info,
-            rank_column_name='RankByLineCount',
-            rank_by=['LineCount'],
-            ascending=[False],
-            method='row_number',
-        )
-    return df_line_count_info
+
 
 
 def pickle_load(filepath: str) -> Any:
