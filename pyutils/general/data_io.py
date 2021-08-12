@@ -94,7 +94,34 @@ def get_filepaths(
     return filepaths
 
 
+def get_line_count_info(
+        filepaths: List[str],
+        rank_by_line_count: Optional[bool] = False,
+    ) -> pd.DataFrame:
+    """
+    Gets line-count of all filepaths given.
+    Returns DataFrame having columns: ['Filepath', 'LineCount', 'Basename', 'Extension'].
+    If `rank_by_line_count` is set to True, then there will be an additional column called: 'RankByLineCount'.
 
+    >>> get_line_count_info(
+        filepaths=['file1.txt', 'file2.txt', 'file3.txt'],
+        rank_by_line_count=True,
+    )
+    """
+    df = pd.DataFrame()
+    df['Filepath'] = filepaths
+    df['LineCount'] = df['Filepath'].apply(get_line_count)
+    df['Basename'] = df['Filepath'].apply(get_basename_from_filepath)
+    df['Extension'] = df['Filepath'].apply(get_extension)
+    if rank_by_line_count:
+        df = rank_and_sort(
+            data=df,
+            rank_column_name='RankByLineCount',
+            rank_by=['LineCount'],
+            ascending=[False],
+            method='row_number',
+        )
+    return df
 
 
 def pickle_load(filepath: str) -> Any:
