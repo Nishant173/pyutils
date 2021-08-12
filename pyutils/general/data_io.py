@@ -96,7 +96,7 @@ def get_filepaths(
 
 def get_line_count_info(
         src_dir: str,
-        extensions: List[str],
+        extensions: Optional[List[str]] = None,
         rank_by_line_count: Optional[bool] = False,
     ) -> pd.DataFrame:
     """
