@@ -36,52 +36,79 @@ def filter_filepaths_by_extensions(
     return filepaths_needed
 
 
-def get_filepaths(
-        src_dir: str,
-        extensions: Optional[List[str]] = None,
-    ) -> List[str]:
-    """
-    Gets list of all filepaths from source directory (in the immediate directory).
-    Note: The `src_dir` can be an r-string.
-    >>> get_filepaths(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
-    """
-    filenames = os.listdir(src_dir)
-    filepaths = [os.path.join(src_dir, filename) for filename in filenames]
-    if extensions is not None:
-        filepaths = filter_filepaths_by_extensions(filepaths=filepaths, extensions=extensions)
-    return filepaths
+def __get_filepaths_at_first_level(src_dir: str) -> List[str]:
+    folders_and_files_in_directory = os.listdir(src_dir)
+    files_in_directory = list(
+        filter(
+            lambda folder_or_file: os.path.isfile(
+                os.path.join(src_dir, folder_or_file)
+            ),
+            folders_and_files_in_directory,
+        )
+    )
+    return files_in_directory
 
 
-def get_filepaths_multi_level(
-        src_dir: str,
-        extensions: Optional[List[str]] = None,
-    ) -> List[str]:
-    """
-    Gets list of all filepaths from source directory (including all sub-directories).
-    Note: The `src_dir` can be an r-string.
-    >>> get_filepaths_multi_level(src_dir="SOME_SRC_DIR", extensions=['csv', 'xlsx'])
-    """
+def __get_filepaths_at_all_levels(src_dir: str) -> List[str]:
     filepaths = []
-    for path, _, files in os.walk(src_dir):
-        for filename in files:
+    for path, _, filenames in os.walk(src_dir):
+        for filename in filenames:
             filepath = os.path.join(path, filename)
             filepaths.append(filepath)
+    return filepaths
+
+
+def get_filepaths(
+        src_dir: str,
+        depth: str,
+        extensions: Optional[List[str]] = None,
+    ) -> List[str]:
+    """
+    Gets list of all filepaths from source directory.
+    
+    Parameters:
+        - src_dir (str): Filepath to the source directory. Can be absolute or relative.
+        - depth (str): Options: ['all_levels', 'first_level'].
+        Set to 'all_levels' if you want to get filepaths from all sub-directories (if any) in the given source directory.
+        Set to 'first_level' if you want to get filepaths only from the first directory given.
+        - extensions (list): List of extensions to filter the filepaths by (optional).
+    
+    >>> get_filepaths(
+        src_dir="SOME_SOURCE_DIR",
+        depth='all_levels',
+        extensions=['csv', 'xlsx'],
+    )
+    """
+    depth_options = ['all_levels', 'first_level']
+    if depth not in depth_options:
+        raise ValueError(f"Expected `depth` to be in {depth_options}, but got '{depth}'")
+    
+    if depth == 'all_levels':
+        filepaths = __get_filepaths_at_all_levels(src_dir=src_dir)
+    elif depth == 'first_level':
+        filepaths = __get_filepaths_at_first_level(src_dir=src_dir)
     if extensions is not None:
         filepaths = filter_filepaths_by_extensions(filepaths=filepaths, extensions=extensions)
     return filepaths
 
 
-def get_line_count_dataframe(
+def get_line_count_info(
         src_dir: str,
         extensions: List[str],
     ) -> pd.DataFrame:
     """
-    Gets line-count of all filepaths from source directory (including all sub-directories).
+    Gets line-count of all files from source directory (including all sub-directories).
     Returns DataFrame having columns: ['Filepath', 'LineCount'].
-    >>> get_line_count_dataframe(src_dir="SOME_SRC_DIR", extensions=['py', 'js', 'txt'])
+    >>> get_line_count_info(
+        src_dir="SOME_SRC_DIR",
+        extensions=['py', 'js', 'txt'],
+    )
     """
-    filepaths = get_filepaths_multi_level(src_dir=src_dir, extensions=extensions)
-    # Keys = filepaths, and values = line count in each file
+    filepaths = get_filepaths(
+        src_dir=src_dir,
+        depth='all_levels',
+        extensions=extensions,
+    )
     dict_line_counts = {
         filepath : get_line_count(filepath=filepath) for filepath in filepaths
     }
