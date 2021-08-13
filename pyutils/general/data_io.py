@@ -133,32 +133,6 @@ def get_line_count_info(
     return df
 
 
-def get_media_metadata(filepaths: List[str]) -> pd.DataFrame:
-    """
-    Gets metadata of all media-file filepaths given i.e; files with extensions mp3, mp4, etc.
-    Returns DataFrame having columns: ['Filepath', 'Basename', 'Extension', 'BitRate',
-    'DurationInSeconds', 'Duration', 'SizeInMb', 'SampleRate'].
-    
-    >>> get_media_metadata(filepaths=['audio.mp3', 'audio.m4a', 'video.mp4'])
-    """
-    bytes_per_mb = 1048576
-    records = []
-    for filepath in tqdm(filepaths):
-        tiny_tag_obj = TinyTag.get(filepath)
-        dict_obj = {}
-        dict_obj['Filepath'] = filepath
-        dict_obj['Basename'] = get_basename_from_filepath(filepath=filepath)
-        dict_obj['Extension'] = get_extension(filepath=filepath)
-        dict_obj['BitRate'] = tiny_tag_obj.bitrate
-        dict_obj['DurationInSeconds'] = None if tiny_tag_obj.duration is None else int(np.ceil(tiny_tag_obj.duration))
-        dict_obj['Duration'] = None if tiny_tag_obj.duration is None else get_timetaken_fstring(num_seconds=int(np.ceil(tiny_tag_obj.duration)))
-        dict_obj['SizeInMb'] = None if tiny_tag_obj.filesize is None else round(tiny_tag_obj.filesize / bytes_per_mb, 2)
-        dict_obj['SampleRate'] = tiny_tag_obj.samplerate
-        records.append(dict_obj)
-    df_records = pd.DataFrame(data=records)
-    return df_records
-
-
 def pickle_load(filepath: str) -> Any:
     """Loads data from pickle file, via joblib module"""
     python_obj = joblib.load(filename=filepath)
