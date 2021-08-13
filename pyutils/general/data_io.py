@@ -133,6 +133,37 @@ def get_line_count_info(
     return df
 
 
+def get_media_metadata(filepaths: List[str]) -> pd.DataFrame:
+    """
+    Gets metadata of all media-file filepaths given i.e; files with extensions mp3, mp4, etc.
+    Returns DataFrame having columns: ['Filepath', 'Basename', 'Extension', 'BitRate',
+    'DurationInSeconds', 'Duration', 'SizeInMb', 'SampleRate'].
+    
+    >>> get_media_metadata(filepaths=['audio.mp3', 'audio.m4a', 'video.mp4'])
+    """
+    bytes_per_mb = 1048576
+    df = pd.DataFrame()
+    df['TinyTagObject'] = [TinyTag.get(filepath) for filepath in tqdm(filepaths)]
+    df['Filepath'] = filepaths
+    df['Basename'] = df['Filepath'].apply(get_basename_from_filepath)
+    df['Extension'] = df['Filepath'].apply(get_extension)
+    df['BitRate'] = df['TinyTagObject'].apply(lambda obj: obj.bitrate)
+    df['DurationInSeconds'] = df['TinyTagObject'].apply(
+        lambda obj: None if obj.duration is None else int(np.ceil(obj.duration))
+    )
+    df['Duration'] = df['TinyTagObject'].apply(
+        lambda obj: None if obj.duration is None else get_timetaken_fstring(
+            num_seconds=int(np.ceil(obj.duration))
+        )
+    )
+    df['SizeInMb'] = df['TinyTagObject'].apply(
+        lambda obj: None if obj.filesize is None else round(obj.filesize / bytes_per_mb, 2)
+    )
+    df['SampleRate'] = df['TinyTagObject'].apply(lambda obj: obj.samplerate)
+    df.drop(labels=['TinyTagObject'], axis=1, inplace=True)
+    return df
+
+
 def pickle_load(filepath: str) -> Any:
     """Loads data from pickle file, via joblib module"""
     python_obj = joblib.load(filename=filepath)
