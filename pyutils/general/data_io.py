@@ -51,13 +51,11 @@ def get_unique_extensions(filepaths: List[str]) -> List[str]:
 
 def __get_filepaths_at_first_level(src_dir: str) -> List[str]:
     folders_and_files_in_directory = os.listdir(src_dir)
+    folders_and_files_in_directory = list(
+        map(lambda folder_or_file: os.path.join(src_dir, folder_or_file), folders_and_files_in_directory)
+    )
     files_in_directory = list(
-        filter(
-            lambda folder_or_file: os.path.isfile(
-                os.path.join(src_dir, folder_or_file)
-            ),
-            folders_and_files_in_directory,
-        )
+        filter(lambda folder_or_file: os.path.isfile(folder_or_file), folders_and_files_in_directory)
     )
     return files_in_directory
 
