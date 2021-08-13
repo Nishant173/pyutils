@@ -55,10 +55,10 @@ def send_email(
         body: str,
         filepaths_to_attachments: Optional[List[str]] = None,
     ) -> None:
-    r"""
+    """
     Sends an email from one Email ID to one or more Email IDs, along with the attachments provided (if any).
     Accepts HTML tags for the `body` parameter.
-    Note: Works only if the sender uses a Gmail ID.
+    Returns None if the email is sent successfully; otherwise raises an Exception.
 
     >>> send_email(
             from_email_id='sender_email_id@gmail.com',
@@ -67,13 +67,7 @@ def send_email(
             cc_email_ids=['person3@gmail.com'],
             subject="Your subject",
             body="Your message",
-            filepaths_to_attachments=[
-                r"C:\user\files\file1.csv",
-                r"C:\user\files\file2.docx",
-                r"C:\user\files\file3.pdf",
-                r"C:\user\files\file4.xls",
-                r"C:\user\files\file5.xlsx",
-            ],
+            filepaths_to_attachments=['file1.xlsx', 'file2.pdf'],
         )
     """
     msg = MIMEMultipart()
