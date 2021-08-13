@@ -43,18 +43,6 @@ def send_email_with_excel_attachments(
     msg['Subject'] = subject
     msg.attach(payload=MIMEText(_text=body, _subtype='html'))
     
-    for excel_filepath_with_ext in excel_filepaths_with_ext:
-        excel_filename_with_ext = get_basename_from_filepath(filepath=excel_filepath_with_ext)
-        attachment = open(file=excel_filepath_with_ext, mode='rb')
-        payload = MIMEBase(_maintype='application', _subtype='octet-stream')
-        payload.set_payload(payload=attachment.read())
-        encoders.encode_base64(msg=payload)
-        payload.add_header(
-            _name='Content-Disposition',
-            _value=f"attachment; filename={excel_filename_with_ext}",
-        )
-        msg.attach(payload=payload)
-    
     server = smtplib.SMTP(host='smtp.gmail.com', port=587)
     server.starttls()
     server.ehlo()
