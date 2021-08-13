@@ -33,6 +33,14 @@ def filter_filepaths_by_extensions(
         filepaths: List[str],
         extensions: List[str],
     ) -> List[str]:
+    """
+    Filters given filepaths by the desired extensions.
+
+    >>> filter_filepaths_by_extensions(
+        filepaths=['one.js', 'two.py', 'three.css', 'four.go', 'five.html', 'six.py', 'seven.js'],
+        extensions=['css', 'js'],
+    )
+    """
     extensions = list(
         map(lambda extension: extension.strip().lower(), extensions)
     )
