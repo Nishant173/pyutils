@@ -2,6 +2,7 @@ from typing import Any, List, Optional
 import json
 import ntpath
 import os
+import shutil
 
 import joblib
 import numpy as np
@@ -24,9 +25,15 @@ def get_extension(filepath: str) -> str:
 
 
 def get_basename_from_filepath(filepath: str) -> str:
-    """Returns base-name of the file in the given `filepath` (along with the extension)"""
+    """Returns base-name of the file/folder from the given `filepath` (along with the extension, if any)"""
     head, tail = ntpath.split(p=filepath)
     return tail or ntpath.basename(head)
+
+
+def get_absolute_filepath(filepath: str) -> str:
+    """Returns absolute filepath of the file/folder from the given `filepath` (along with the extension, if any)"""
+    absolute_filepath = os.path.realpath(path=filepath)
+    return absolute_filepath
 
 
 def filter_filepaths_by_extensions(
@@ -109,6 +116,24 @@ def get_filepaths(
     if extensions is not None:
         filepaths = filter_filepaths_by_extensions(filepaths=filepaths, extensions=extensions)
     return filepaths
+
+
+def create_archive_file(
+        src_dir: str,
+        archive_format: str,
+    ) -> None:
+    """
+    Creates archive file of the given source directory.
+    Options for `archive_format` are: ['zip', 'tar', 'gztar', 'bztar', 'xztar'].
+    """
+    absolute_path_to_src_dir = get_absolute_filepath(filepath=src_dir)
+    basename_of_src_dir = get_basename_from_filepath(filepath=src_dir)
+    shutil.make_archive(
+        base_name=basename_of_src_dir,
+        format=archive_format,
+        root_dir=absolute_path_to_src_dir,
+    )
+    return None
 
 
 def get_line_count_info(
