@@ -140,7 +140,7 @@ def save_styled_dataframes(
     return None
 
 
-def get_all_excel_sheets(filepath: str) -> Dict[str, pd.DataFrame]:
+def get_all_excel_sheets_as_dataframes(filepath: str) -> Dict[str, pd.DataFrame]:
     """
     Takes `filepath` to an Excel file. Returns dictionary having keys = sheet names, and
     values = DataFrame corresponding to respective sheet name.
@@ -158,7 +158,7 @@ def excel_file_to_bytes(filepath: str) -> ByteString:
     """Takes `filepath` to an Excel file, and returns ByteString of the same"""
     bio = io.BytesIO()
     writer = pd.ExcelWriter(bio, engine='openpyxl')
-    dict_all_excel_sheets = get_all_excel_sheets(filepath=filepath)
+    dict_all_excel_sheets = get_all_excel_sheets_as_dataframes(filepath=filepath)
     for sheet_name, df_obj in dict_all_excel_sheets.items():
         df_obj.to_excel(writer, sheet_name=sheet_name, index=False)
     writer.save()
