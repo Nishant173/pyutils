@@ -2,8 +2,8 @@ from typing import Dict, List, Optional, Union
 
 import pandas as pd
 
+from pyutils.core.exceptions import InvalidDataFrameError
 from pyutils.core.type_annotations import NumberOrString
-from pyutils.exceptions.custom_exceptions import InvalidDataFrameError
 
 
 def is_dataframe_full(data: pd.DataFrame) -> bool:
