@@ -1,2 +1,0 @@
-class InvalidDataFrameError(Exception):
-    pass
