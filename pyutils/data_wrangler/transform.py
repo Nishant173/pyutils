@@ -341,7 +341,7 @@ def rank_and_sort(
         rank_column_name: NumberOrString,
         rank_by: List[NumberOrString],
         ascending: List[bool],
-        method: str,
+        how: str,
     ) -> pd.DataFrame:
     """
     Adds ranking column and sorts records based on the `rank_by` column/s.
@@ -351,7 +351,7 @@ def rank_and_sort(
         - rank_column_name (int | float | str): Name of the ranking column (the column which will contain the actual ranking).
         - rank_by (list): List of columns to rank by.
         - ascending (list): List of booleans signifying the order of ranking (must correspond to the columns in `rank_by`).
-        - method (str): Type of ranking to be used. Options: ['row_number', 'dense_rank', 'non_dense_rank'].
+        - how (str): How the ranking should be implemented. Options: ['row_number', 'dense_rank', 'non_dense_rank'].
     
     |    | column   |   row_number |   dense_rank |   non_dense_rank |
     |---:|:---------|-------------:|-------------:|-----------------:|
@@ -370,20 +370,20 @@ def rank_and_sort(
     | 12 | g        |           13 |            7 |               13 |
     | 13 | g        |           14 |            7 |               13 |
     """
-    method_options = ['row_number', 'dense_rank', 'non_dense_rank']
-    if method not in method_options:
-        raise ValueError(f"Expected `method` to be in {method_options}, but got '{method}'")
+    how_options = ['row_number', 'dense_rank', 'non_dense_rank']
+    if how not in how_options:
+        raise ValueError(f"Expected `how` to be in {how_options}, but got '{how}'")
     if len(rank_by) != len(ascending):
         raise ValueError(
             "Expected `rank_by` and `ascending` to be of same length,"
             f" but got lengths {len(rank_by)} and {len(ascending)} respectively."
         )
     df_ranked = data.sort_values(by=rank_by, ascending=ascending, ignore_index=True).copy(deep=True)
-    if method == 'row_number':
+    if how == 'row_number':
         rankings = __get_row_number_rankings(df_ranked=df_ranked)
-    elif method == 'dense_rank':
+    elif how == 'dense_rank':
         rankings = __get_dense_rankings(df_ranked=df_ranked, rank_by=rank_by)
-    elif method == 'non_dense_rank':
+    elif how == 'non_dense_rank':
         rankings = __get_non_dense_rankings(df_ranked=df_ranked, rank_by=rank_by)
     df_ranked[rank_column_name] = rankings
     column_order = [rank_column_name] + df_ranked.drop(labels=[rank_column_name], axis=1).columns.tolist()

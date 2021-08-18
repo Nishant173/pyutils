@@ -161,7 +161,7 @@ def get_line_count_info(
             rank_column_name='RankByLineCount',
             rank_by=['LineCount'],
             ascending=[False],
-            method='row_number',
+            how='dense_rank',
         )
     return df
 
