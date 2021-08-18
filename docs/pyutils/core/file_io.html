@@ -189,7 +189,7 @@ def get_line_count_info(
             rank_column_name=&#39;RankByLineCount&#39;,
             rank_by=[&#39;LineCount&#39;],
             ascending=[False],
-            method=&#39;row_number&#39;,
+            how=&#39;dense_rank&#39;,
         )
     return df
 
@@ -508,7 +508,7 @@ If <code>rank_by_line_count</code> is set to True, then there will be an additio
             rank_column_name=&#39;RankByLineCount&#39;,
             rank_by=[&#39;LineCount&#39;],
             ascending=[False],
-            method=&#39;row_number&#39;,
+            how=&#39;dense_rank&#39;,
         )
     return df</code></pre>
 </details>
