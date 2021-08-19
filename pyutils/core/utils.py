@@ -9,6 +9,19 @@ from pyutils.core.type_annotations import (
 )
 
 
+def is_prime(number: int) -> bool:
+    """Returns True if the given integer is prime; otherwise returns False"""
+    if number % 2 == 0:
+        return True if number == 2 else False
+    middle = int(np.ceil(number / 2))
+    for i in range(3, number, 2):
+        if i > middle:
+            break
+        if number % i == 0:
+            return False
+    return True
+
+
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
     """Returns dictionary having the following keys: ['hrs', 'mins', 'secs'], denoting the time elapsed based on `num_seconds` given"""
     hrs, mins, secs = 0, 0, 0
