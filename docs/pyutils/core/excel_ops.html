@@ -36,9 +36,20 @@
 )
 import io
 
+import openpyxl
+from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.dimensions import (
+    ColumnDimension,
+    DimensionHolder,
+)
+from openpyxl.worksheet.worksheet import Worksheet
 import pandas as pd
+import win32com.client
 
-from pyutils.core.type_annotations import NumberOrString
+from pyutils.core.type_annotations import (
+    Number,
+    NumberOrString,
+)
 
 
 def style_dataframe_conditionally(
@@ -165,13 +176,18 @@ def save_styled_dataframes(
     return None
 
 
+def get_all_excel_sheet_names(filepath: str) -&gt; List[str]:
+    &#34;&#34;&#34;Returns list of all sheet names in an Excel file&#34;&#34;&#34;
+    excel_file = pd.ExcelFile(filepath, engine=&#39;openpyxl&#39;)
+    return excel_file.sheet_names
+
+
 def get_all_excel_sheets_as_dataframes(filepath: str) -&gt; Dict[str, pd.DataFrame]:
     &#34;&#34;&#34;
     Takes `filepath` to an Excel file. Returns dictionary having keys = sheet names, and
     values = DataFrame corresponding to respective sheet name.
     &#34;&#34;&#34;
-    excel_file = pd.ExcelFile(filepath, engine=&#39;openpyxl&#39;)
-    sheet_names = excel_file.sheet_names
+    sheet_names = get_all_excel_sheet_names(filepath=filepath)
     dict_obj = {}
     for sheet_name in sheet_names:
         df_by_sheet = pd.read_excel(filepath, engine=&#39;openpyxl&#39;, sheet_name=sheet_name)
@@ -188,7 +204,119 @@ def excel_file_to_bytes(filepath: str) -&gt; ByteString:
         df_obj.to_excel(writer, sheet_name=sheet_name, index=False)
     writer.save()
     bytes_obj = bio.getvalue()
-    return bytes_obj</code></pre>
+    return bytes_obj
+
+
+def __get_column_names_from_worksheet(worksheet: Worksheet) -&gt; List[NumberOrString]:
+    &#34;&#34;&#34;Returns list of column names (headers) from worksheet object (i.e; the values from row #1)&#34;&#34;&#34;
+    column_names = [
+        column.value for column in next(worksheet.iter_rows(min_row=1, max_row=1))
+    ]
+    return column_names
+
+
+def adjust_column_widths_of_excel_file(
+        filepath: str,
+        how: Optional[str] = &#39;column_header_and_values&#39;,
+        fixed_width: Optional[Number] = None,
+        sheets_subset: Optional[List[str]] = None,
+    ) -&gt; None:
+    &#34;&#34;&#34;
+    Adjusts the widths of the columns in the Excel file given.
+    Works only for non-hierarchical columns (flat columns).
+    Note: Only works for Excel files with the &#39;xlsx&#39; extension.
+
+    Parameters:
+        - filepath (str): Path to the Excel file (along with the extension).
+        - how (str): How to assign the column widths. Options: [&#39;column_header&#39;, &#39;column_header_and_values&#39;, &#39;fixed&#39;]. Default: &#39;column_header_and_values&#39;.
+        If `how` is set to &#39;column_header&#39;, the column widths will be the size of the column header.
+        If `how` is set to &#39;column_header_and_values&#39;, the column widths will be the size of the longest of the column&#39;s header and values.
+        If `how` is set to &#39;fixed&#39;, please set the `fixed_width` parameter.
+        - fixed_width (int | float): Fixed width to use for the columns. To be set only if `how` is set to &#39;fixed&#39;. Default: None.
+        - sheets_subset (list): Subset of sheets for which the column widths need to be altered. Default: None.
+    
+    &gt;&gt;&gt; adjust_column_widths_of_excel_file(
+            filepath=&#34;some_data.xlsx&#34;,
+            how=&#39;fixed&#39;,
+            fixed_width=15,
+            sheets_subset=[&#39;Sheet1&#39;, &#39;Sheet2&#39;, &#39;Sheet5&#39;],
+        )
+    &#34;&#34;&#34;
+    how_options = [&#39;column_header&#39;, &#39;column_header_and_values&#39;, &#39;fixed&#39;]
+    if how not in how_options:
+        raise ValueError(f&#34;Expected `how` to be in {how_options}, but got &#39;{how}&#39;&#34;)
+    if how == &#39;fixed&#39; and fixed_width is None:
+        raise ValueError(&#34;Since you have set how=&#39;fixed&#39;, please set the `fixed_width` parameter as well&#34;)
+    
+    wb_obj = openpyxl.load_workbook(filename=filepath)
+    sheet_names = wb_obj.sheetnames if sheets_subset is None else sheets_subset
+    for sheet_name in sheet_names:
+        ws_obj = wb_obj[sheet_name]
+        column_names = __get_column_names_from_worksheet(worksheet=ws_obj)
+        dimension_holder = DimensionHolder(worksheet=ws_obj)
+        for column_idx in range(ws_obj.min_column, ws_obj.max_column + 1):
+            column_letter = get_column_letter(idx=column_idx)
+            if how == &#39;column_header_and_values&#39;:
+                column_header_and_values = ws_obj[column_letter]
+                width = max(
+                    list(
+                        map(lambda cell_obj: len(str(cell_obj.value)), column_header_and_values)
+                    )
+                )
+                width *= 1.2
+            elif how == &#39;column_header&#39;:
+                column_name = column_names[column_idx - 1]
+                width = len(column_name)
+                width *= 1.2
+            elif how == &#39;fixed&#39;:
+                width = fixed_width
+            dimension_holder[column_letter] = ColumnDimension(
+                worksheet=ws_obj,
+                min=column_idx,
+                max=column_idx,
+                width=width,
+            )
+        ws_obj.column_dimensions = dimension_holder
+    wb_obj.save(filename=filepath)
+    return None
+
+
+def excel_to_pdf(
+        filepath: str,
+        destination_pdf_filepath: str,
+        sheets_subset: Optional[List[str]] = None,
+    ) -&gt; None:
+    r&#34;&#34;&#34;
+    Takes `filepath` to an Excel file, and converts it to PDF file and saves it to `destination_pdf_filepath`.
+    Note: Requires absolute filepaths. Does not work with relative filepaths.
+    Reference: https://stackoverflow.com/questions/66421969/how-to-convert-excel-to-pdf-using-python
+
+    &gt;&gt;&gt; excel_to_pdf(
+            filepath=r&#34;C:\files\excel_files\some_data.xlsx&#34;,
+            destination_pdf_filepath=r&#34;C:\files\pdf_files\some_data.pdf&#34;,
+            sheets_subset=[&#39;Sheet1&#39;, &#39;Sheet2&#39;, &#39;Sheet5&#39;],
+        )
+    &#34;&#34;&#34;
+    sheet_names = get_all_excel_sheet_names(filepath=filepath)
+    sheet_indices = [idx+1 for idx, _ in enumerate(sheet_names)] # Set 1-based indices
+    if sheets_subset is not None:
+        sheets_that_do_not_exist = list(
+            set(sheets_subset).difference(set(sheet_names))
+        )
+        if sheets_that_do_not_exist:
+            raise ValueError(f&#34;The following sheet names do not exist: {sheets_that_do_not_exist}. Please correct the `sheets_subset` parameter&#34;)
+        for sheet_idx, sheet_name in zip(sheet_indices, sheet_names):
+            if sheet_name not in sheets_subset:
+                sheet_indices.remove(sheet_idx)
+                sheet_names.remove(sheet_name)
+    dispatch_obj = win32com.client.Dispatch(dispatch=&#34;Excel.Application&#34;)
+    dispatch_obj.Visible = False
+    wb_obj = dispatch_obj.Workbooks.Open(filepath)
+    wb_obj.WorkSheets(sheet_indices).Select()
+    wb_obj.ActiveSheet.ExportAsFixedFormat(0, destination_pdf_filepath)
+    wb_obj.Close()
+    dispatch_obj.Quit()
+    return None</code></pre>
 </details>
 </section>
 <section>
@@ -198,6 +326,100 @@ def excel_file_to_bytes(filepath: str) -&gt; ByteString:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="pyutils.core.excel_ops.adjust_column_widths_of_excel_file"><code class="name flex">
+<span>def <span class="ident">adjust_column_widths_of_excel_file</span></span>(<span>filepath: str, how: Optional[str] = 'column_header_and_values', fixed_width: Union[float, int, NoneType] = None, sheets_subset: Optional[List[str]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Adjusts the widths of the columns in the Excel file given.
+Works only for non-hierarchical columns (flat columns).
+Note: Only works for Excel files with the 'xlsx' extension.</p>
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li>filepath (str): Path to the Excel file (along with the extension).</li>
+<li>how (str): How to assign the column widths. Options: ['column_header', 'column_header_and_values', 'fixed']. Default: 'column_header_and_values'.
+If <code>how</code> is set to 'column_header', the column widths will be the size of the column header.
+If <code>how</code> is set to 'column_header_and_values', the column widths will be the size of the longest of the column's header and values.
+If <code>how</code> is set to 'fixed', please set the <code>fixed_width</code> parameter.</li>
+<li>fixed_width (int | float): Fixed width to use for the columns. To be set only if <code>how</code> is set to 'fixed'. Default: None.</li>
+<li>sheets_subset (list): Subset of sheets for which the column widths need to be altered. Default: None.</li>
+</ul>
+<pre><code class="language-python-repl">&gt;&gt;&gt; adjust_column_widths_of_excel_file(
+        filepath=&quot;some_data.xlsx&quot;,
+        how='fixed',
+        fixed_width=15,
+        sheets_subset=['Sheet1', 'Sheet2', 'Sheet5'],
+    )
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def adjust_column_widths_of_excel_file(
+        filepath: str,
+        how: Optional[str] = &#39;column_header_and_values&#39;,
+        fixed_width: Optional[Number] = None,
+        sheets_subset: Optional[List[str]] = None,
+    ) -&gt; None:
+    &#34;&#34;&#34;
+    Adjusts the widths of the columns in the Excel file given.
+    Works only for non-hierarchical columns (flat columns).
+    Note: Only works for Excel files with the &#39;xlsx&#39; extension.
+
+    Parameters:
+        - filepath (str): Path to the Excel file (along with the extension).
+        - how (str): How to assign the column widths. Options: [&#39;column_header&#39;, &#39;column_header_and_values&#39;, &#39;fixed&#39;]. Default: &#39;column_header_and_values&#39;.
+        If `how` is set to &#39;column_header&#39;, the column widths will be the size of the column header.
+        If `how` is set to &#39;column_header_and_values&#39;, the column widths will be the size of the longest of the column&#39;s header and values.
+        If `how` is set to &#39;fixed&#39;, please set the `fixed_width` parameter.
+        - fixed_width (int | float): Fixed width to use for the columns. To be set only if `how` is set to &#39;fixed&#39;. Default: None.
+        - sheets_subset (list): Subset of sheets for which the column widths need to be altered. Default: None.
+    
+    &gt;&gt;&gt; adjust_column_widths_of_excel_file(
+            filepath=&#34;some_data.xlsx&#34;,
+            how=&#39;fixed&#39;,
+            fixed_width=15,
+            sheets_subset=[&#39;Sheet1&#39;, &#39;Sheet2&#39;, &#39;Sheet5&#39;],
+        )
+    &#34;&#34;&#34;
+    how_options = [&#39;column_header&#39;, &#39;column_header_and_values&#39;, &#39;fixed&#39;]
+    if how not in how_options:
+        raise ValueError(f&#34;Expected `how` to be in {how_options}, but got &#39;{how}&#39;&#34;)
+    if how == &#39;fixed&#39; and fixed_width is None:
+        raise ValueError(&#34;Since you have set how=&#39;fixed&#39;, please set the `fixed_width` parameter as well&#34;)
+    
+    wb_obj = openpyxl.load_workbook(filename=filepath)
+    sheet_names = wb_obj.sheetnames if sheets_subset is None else sheets_subset
+    for sheet_name in sheet_names:
+        ws_obj = wb_obj[sheet_name]
+        column_names = __get_column_names_from_worksheet(worksheet=ws_obj)
+        dimension_holder = DimensionHolder(worksheet=ws_obj)
+        for column_idx in range(ws_obj.min_column, ws_obj.max_column + 1):
+            column_letter = get_column_letter(idx=column_idx)
+            if how == &#39;column_header_and_values&#39;:
+                column_header_and_values = ws_obj[column_letter]
+                width = max(
+                    list(
+                        map(lambda cell_obj: len(str(cell_obj.value)), column_header_and_values)
+                    )
+                )
+                width *= 1.2
+            elif how == &#39;column_header&#39;:
+                column_name = column_names[column_idx - 1]
+                width = len(column_name)
+                width *= 1.2
+            elif how == &#39;fixed&#39;:
+                width = fixed_width
+            dimension_holder[column_letter] = ColumnDimension(
+                worksheet=ws_obj,
+                min=column_idx,
+                max=column_idx,
+                width=width,
+            )
+        ws_obj.column_dimensions = dimension_holder
+    wb_obj.save(filename=filepath)
+    return None</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.excel_ops.excel_file_to_bytes"><code class="name flex">
 <span>def <span class="ident">excel_file_to_bytes</span></span>(<span>filepath: str) ‑> ByteString</span>
 </code></dt>
@@ -219,6 +441,76 @@ def excel_file_to_bytes(filepath: str) -&gt; ByteString:
     return bytes_obj</code></pre>
 </details>
 </dd>
+<dt id="pyutils.core.excel_ops.excel_to_pdf"><code class="name flex">
+<span>def <span class="ident">excel_to_pdf</span></span>(<span>filepath: str, destination_pdf_filepath: str, sheets_subset: Optional[List[str]] = None) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Takes <code>filepath</code> to an Excel file, and converts it to PDF file and saves it to <code>destination_pdf_filepath</code>.
+Note: Requires absolute filepaths. Does not work with relative filepaths.
+Reference: <a href="https://stackoverflow.com/questions/66421969/how-to-convert-excel-to-pdf-using-python">https://stackoverflow.com/questions/66421969/how-to-convert-excel-to-pdf-using-python</a></p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; excel_to_pdf(
+        filepath=r&quot;C:\files\excel_files\some_data.xlsx&quot;,
+        destination_pdf_filepath=r&quot;C:\files\pdf_files\some_data.pdf&quot;,
+        sheets_subset=['Sheet1', 'Sheet2', 'Sheet5'],
+    )
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def excel_to_pdf(
+        filepath: str,
+        destination_pdf_filepath: str,
+        sheets_subset: Optional[List[str]] = None,
+    ) -&gt; None:
+    r&#34;&#34;&#34;
+    Takes `filepath` to an Excel file, and converts it to PDF file and saves it to `destination_pdf_filepath`.
+    Note: Requires absolute filepaths. Does not work with relative filepaths.
+    Reference: https://stackoverflow.com/questions/66421969/how-to-convert-excel-to-pdf-using-python
+
+    &gt;&gt;&gt; excel_to_pdf(
+            filepath=r&#34;C:\files\excel_files\some_data.xlsx&#34;,
+            destination_pdf_filepath=r&#34;C:\files\pdf_files\some_data.pdf&#34;,
+            sheets_subset=[&#39;Sheet1&#39;, &#39;Sheet2&#39;, &#39;Sheet5&#39;],
+        )
+    &#34;&#34;&#34;
+    sheet_names = get_all_excel_sheet_names(filepath=filepath)
+    sheet_indices = [idx+1 for idx, _ in enumerate(sheet_names)] # Set 1-based indices
+    if sheets_subset is not None:
+        sheets_that_do_not_exist = list(
+            set(sheets_subset).difference(set(sheet_names))
+        )
+        if sheets_that_do_not_exist:
+            raise ValueError(f&#34;The following sheet names do not exist: {sheets_that_do_not_exist}. Please correct the `sheets_subset` parameter&#34;)
+        for sheet_idx, sheet_name in zip(sheet_indices, sheet_names):
+            if sheet_name not in sheets_subset:
+                sheet_indices.remove(sheet_idx)
+                sheet_names.remove(sheet_name)
+    dispatch_obj = win32com.client.Dispatch(dispatch=&#34;Excel.Application&#34;)
+    dispatch_obj.Visible = False
+    wb_obj = dispatch_obj.Workbooks.Open(filepath)
+    wb_obj.WorkSheets(sheet_indices).Select()
+    wb_obj.ActiveSheet.ExportAsFixedFormat(0, destination_pdf_filepath)
+    wb_obj.Close()
+    dispatch_obj.Quit()
+    return None</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.excel_ops.get_all_excel_sheet_names"><code class="name flex">
+<span>def <span class="ident">get_all_excel_sheet_names</span></span>(<span>filepath: str) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of all sheet names in an Excel file</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all_excel_sheet_names(filepath: str) -&gt; List[str]:
+    &#34;&#34;&#34;Returns list of all sheet names in an Excel file&#34;&#34;&#34;
+    excel_file = pd.ExcelFile(filepath, engine=&#39;openpyxl&#39;)
+    return excel_file.sheet_names</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.excel_ops.get_all_excel_sheets_as_dataframes"><code class="name flex">
 <span>def <span class="ident">get_all_excel_sheets_as_dataframes</span></span>(<span>filepath: str) ‑> Dict[str, pandas.core.frame.DataFrame]</span>
 </code></dt>
@@ -234,8 +526,7 @@ values = DataFrame corresponding to respective sheet name.</p></div>
     Takes `filepath` to an Excel file. Returns dictionary having keys = sheet names, and
     values = DataFrame corresponding to respective sheet name.
     &#34;&#34;&#34;
-    excel_file = pd.ExcelFile(filepath, engine=&#39;openpyxl&#39;)
-    sheet_names = excel_file.sheet_names
+    sheet_names = get_all_excel_sheet_names(filepath=filepath)
     dict_obj = {}
     for sheet_name in sheet_names:
         df_by_sheet = pd.read_excel(filepath, engine=&#39;openpyxl&#39;, sheet_name=sheet_name)
@@ -464,7 +755,10 @@ after applying background gradient styles based on the given column subsets.</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="pyutils.core.excel_ops.adjust_column_widths_of_excel_file" href="#pyutils.core.excel_ops.adjust_column_widths_of_excel_file">adjust_column_widths_of_excel_file</a></code></li>
 <li><code><a title="pyutils.core.excel_ops.excel_file_to_bytes" href="#pyutils.core.excel_ops.excel_file_to_bytes">excel_file_to_bytes</a></code></li>
+<li><code><a title="pyutils.core.excel_ops.excel_to_pdf" href="#pyutils.core.excel_ops.excel_to_pdf">excel_to_pdf</a></code></li>
+<li><code><a title="pyutils.core.excel_ops.get_all_excel_sheet_names" href="#pyutils.core.excel_ops.get_all_excel_sheet_names">get_all_excel_sheet_names</a></code></li>
 <li><code><a title="pyutils.core.excel_ops.get_all_excel_sheets_as_dataframes" href="#pyutils.core.excel_ops.get_all_excel_sheets_as_dataframes">get_all_excel_sheets_as_dataframes</a></code></li>
 <li><code><a title="pyutils.core.excel_ops.save_styled_dataframes" href="#pyutils.core.excel_ops.save_styled_dataframes">save_styled_dataframes</a></code></li>
 <li><code><a title="pyutils.core.excel_ops.style_dataframe_conditionally" href="#pyutils.core.excel_ops.style_dataframe_conditionally">style_dataframe_conditionally</a></code></li>
