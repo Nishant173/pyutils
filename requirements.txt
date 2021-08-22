@@ -19,6 +19,7 @@ Pillow==8.3.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 pytz==2021.1
+pywin32==301
 randomtimestamp==2.0.0
 six==1.16.0
 sqlparse==0.4.1
