@@ -22,6 +22,22 @@ from pyutils.core.type_annotations import (
 from pyutils.core.utils import get_indices_for_partitioning
 
 
+def get_mapping_between_columns(
+        data: pd.DataFrame,
+        from_: NumberOrString,
+        to: NumberOrString,
+    ) -> Dict:
+    """Returns dictionary having mappings between the `from_` and `to` columns of the given DataFrame"""
+    from_column_has_nulls = (data[from_].isnull().sum() > 0)
+    from_column_has_unique_values = (data[from_].nunique() == len(data))
+    if from_column_has_nulls:
+        raise ValueError("Values in the `from_` column must be non-nulls")
+    if not from_column_has_unique_values:
+        raise ValueError("Values in the `from_` column must be unique, as they will be the keys of the returned dictionary")
+    mapper_dictionary = data.loc[:, [from_, to]].set_index(keys=[from_]).to_dict()[to]
+    return mapper_dictionary
+
+
 def spread_array_by_factor(
         array: List[Number],
         factor: int,
