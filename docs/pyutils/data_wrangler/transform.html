@@ -36,18 +36,34 @@ import pandas as pd
 
 from pyutils.core.date_ops import get_current_timestamp_as_integer
 from pyutils.core.text_casing import (
-    lcc2sc,
-    lcc2ucc,
-    sc2lcc,
-    sc2ucc,
-    ucc2lcc,
-    ucc2sc,
+    camel_to_pascal,
+    camel_to_snake,
+    pascal_to_camel,
+    pascal_to_snake,
+    snake_to_camel,
+    snake_to_pascal,
 )
 from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
 )
 from pyutils.core.utils import get_indices_for_partitioning
+
+
+def get_mapping_between_columns(
+        data: pd.DataFrame,
+        from_: NumberOrString,
+        to: NumberOrString,
+    ) -&gt; Dict:
+    &#34;&#34;&#34;Returns dictionary having mappings between the `from_` and `to` columns of the given DataFrame&#34;&#34;&#34;
+    from_column_has_nulls = (data[from_].isnull().sum() &gt; 0)
+    from_column_has_unique_values = (data[from_].nunique() == len(data))
+    if from_column_has_nulls:
+        raise ValueError(&#34;Values in the `from_` column must be non-nulls&#34;)
+    if not from_column_has_unique_values:
+        raise ValueError(&#34;Values in the `from_` column must be unique, as they will be the keys of the returned dictionary&#34;)
+    mapper_dictionary = data.loc[:, [from_, to]].set_index(keys=[from_]).to_dict()[to]
+    return mapper_dictionary
 
 
 def spread_array_by_factor(
@@ -289,23 +305,23 @@ def switch_column_casing(
     &#34;&#34;&#34;
     Switch casing of columns in DataFrame.
     Options for `casing_type`:
-        * &#39;sc2lcc&#39;: snake-case to lower-camel-case (Eg: some_text --&gt; someText)
-        * &#39;sc2ucc&#39;: snake-case to upper-camel-case (Eg: some_text --&gt; SomeText)
-        * &#39;lcc2sc&#39;: lower-camel-case to snake-case (Eg: someText --&gt; some_text)
-        * &#39;lcc2ucc&#39;: lower-camel-case to upper-camel-case (Eg: someText --&gt; SomeText)
-        * &#39;ucc2lcc&#39;: upper-camel-case to lower-camel-case (Eg: SomeText --&gt; someText)
-        * &#39;ucc2sc&#39;: upper-camel-case to snake-case (Eg: SomeText --&gt; some_text)
+        * &#39;camel_to_pascal&#39;: Converts camel-case to pascal-case (Eg: someText --&gt; SomeText)
+        * &#39;camel_to_snake&#39;: Converts camel-case to snake-case (Eg: someText --&gt; some_text)
+        * &#39;pascal_to_camel&#39;: Converts pascal-case to camel-case (Eg: SomeText --&gt; someText)
+        * &#39;pascal_to_snake&#39;: Converts pascal-case to snake-case (Eg: SomeText --&gt; some_text)
+        * &#39;snake_to_camel&#39;: Converts snake-case to camel-case (Eg: some_text --&gt; someText)
+        * &#39;snake_to_pascal&#39;: Converts snake-case to pascal-case (Eg: some_text --&gt; SomeText)
     
     Note: Expects all columns present in DataFrame to be of same casing.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
     mapper = {
-        &#39;lcc2sc&#39;: lcc2sc,
-        &#39;lcc2ucc&#39;: lcc2ucc,
-        &#39;sc2lcc&#39;: sc2lcc,
-        &#39;sc2ucc&#39;: sc2ucc,
-        &#39;ucc2lcc&#39;: ucc2lcc,
-        &#39;ucc2sc&#39;: ucc2sc,
+        &#39;camel_to_pascal&#39;: camel_to_pascal,
+        &#39;camel_to_snake&#39;: camel_to_snake,
+        &#39;pascal_to_camel&#39;: pascal_to_camel,
+        &#39;pascal_to_snake&#39;: pascal_to_snake,
+        &#39;snake_to_camel&#39;: snake_to_camel,
+        &#39;snake_to_pascal&#39;: snake_to_pascal,
     }
     columns = df.columns.tolist()
     df.columns = list(map(mapper[casing_type], columns))
@@ -542,6 +558,31 @@ Returns DataFrame with an additional column containing the partition number.</p>
     if columns_to_drop:
         df.drop(labels=columns_to_drop, axis=1, inplace=True)
     return df</code></pre>
+</details>
+</dd>
+<dt id="pyutils.data_wrangler.transform.get_mapping_between_columns"><code class="name flex">
+<span>def <span class="ident">get_mapping_between_columns</span></span>(<span>data: pandas.core.frame.DataFrame, from_: Union[int, float, str], to: Union[int, float, str]) ‑> Dict</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns dictionary having mappings between the <code>from_</code> and <code>to</code> columns of the given DataFrame</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_mapping_between_columns(
+        data: pd.DataFrame,
+        from_: NumberOrString,
+        to: NumberOrString,
+    ) -&gt; Dict:
+    &#34;&#34;&#34;Returns dictionary having mappings between the `from_` and `to` columns of the given DataFrame&#34;&#34;&#34;
+    from_column_has_nulls = (data[from_].isnull().sum() &gt; 0)
+    from_column_has_unique_values = (data[from_].nunique() == len(data))
+    if from_column_has_nulls:
+        raise ValueError(&#34;Values in the `from_` column must be non-nulls&#34;)
+    if not from_column_has_unique_values:
+        raise ValueError(&#34;Values in the `from_` column must be unique, as they will be the keys of the returned dictionary&#34;)
+    mapper_dictionary = data.loc[:, [from_, to]].set_index(keys=[from_]).to_dict()[to]
+    return mapper_dictionary</code></pre>
 </details>
 </dd>
 <dt id="pyutils.data_wrangler.transform.linspace_by_index"><code class="name flex">
@@ -1087,12 +1128,12 @@ Returns list of partitioned DataFrames.</p></div>
 <dd>
 <div class="desc"><p>Switch casing of columns in DataFrame.
 Options for <code>casing_type</code>:
-* 'sc2lcc': snake-case to lower-camel-case (Eg: some_text &ndash;&gt; someText)
-* 'sc2ucc': snake-case to upper-camel-case (Eg: some_text &ndash;&gt; SomeText)
-* 'lcc2sc': lower-camel-case to snake-case (Eg: someText &ndash;&gt; some_text)
-* 'lcc2ucc': lower-camel-case to upper-camel-case (Eg: someText &ndash;&gt; SomeText)
-* 'ucc2lcc': upper-camel-case to lower-camel-case (Eg: SomeText &ndash;&gt; someText)
-* 'ucc2sc': upper-camel-case to snake-case (Eg: SomeText &ndash;&gt; some_text)</p>
+* 'camel_to_pascal': Converts camel-case to pascal-case (Eg: someText &ndash;&gt; SomeText)
+* 'camel_to_snake': Converts camel-case to snake-case (Eg: someText &ndash;&gt; some_text)
+* 'pascal_to_camel': Converts pascal-case to camel-case (Eg: SomeText &ndash;&gt; someText)
+* 'pascal_to_snake': Converts pascal-case to snake-case (Eg: SomeText &ndash;&gt; some_text)
+* 'snake_to_camel': Converts snake-case to camel-case (Eg: some_text &ndash;&gt; someText)
+* 'snake_to_pascal': Converts snake-case to pascal-case (Eg: some_text &ndash;&gt; SomeText)</p>
 <p>Note: Expects all columns present in DataFrame to be of same casing.</p></div>
 <details class="source">
 <summary>
@@ -1105,23 +1146,23 @@ Options for <code>casing_type</code>:
     &#34;&#34;&#34;
     Switch casing of columns in DataFrame.
     Options for `casing_type`:
-        * &#39;sc2lcc&#39;: snake-case to lower-camel-case (Eg: some_text --&gt; someText)
-        * &#39;sc2ucc&#39;: snake-case to upper-camel-case (Eg: some_text --&gt; SomeText)
-        * &#39;lcc2sc&#39;: lower-camel-case to snake-case (Eg: someText --&gt; some_text)
-        * &#39;lcc2ucc&#39;: lower-camel-case to upper-camel-case (Eg: someText --&gt; SomeText)
-        * &#39;ucc2lcc&#39;: upper-camel-case to lower-camel-case (Eg: SomeText --&gt; someText)
-        * &#39;ucc2sc&#39;: upper-camel-case to snake-case (Eg: SomeText --&gt; some_text)
+        * &#39;camel_to_pascal&#39;: Converts camel-case to pascal-case (Eg: someText --&gt; SomeText)
+        * &#39;camel_to_snake&#39;: Converts camel-case to snake-case (Eg: someText --&gt; some_text)
+        * &#39;pascal_to_camel&#39;: Converts pascal-case to camel-case (Eg: SomeText --&gt; someText)
+        * &#39;pascal_to_snake&#39;: Converts pascal-case to snake-case (Eg: SomeText --&gt; some_text)
+        * &#39;snake_to_camel&#39;: Converts snake-case to camel-case (Eg: some_text --&gt; someText)
+        * &#39;snake_to_pascal&#39;: Converts snake-case to pascal-case (Eg: some_text --&gt; SomeText)
     
     Note: Expects all columns present in DataFrame to be of same casing.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
     mapper = {
-        &#39;lcc2sc&#39;: lcc2sc,
-        &#39;lcc2ucc&#39;: lcc2ucc,
-        &#39;sc2lcc&#39;: sc2lcc,
-        &#39;sc2ucc&#39;: sc2ucc,
-        &#39;ucc2lcc&#39;: ucc2lcc,
-        &#39;ucc2sc&#39;: ucc2sc,
+        &#39;camel_to_pascal&#39;: camel_to_pascal,
+        &#39;camel_to_snake&#39;: camel_to_snake,
+        &#39;pascal_to_camel&#39;: pascal_to_camel,
+        &#39;pascal_to_snake&#39;: pascal_to_snake,
+        &#39;snake_to_camel&#39;: snake_to_camel,
+        &#39;snake_to_pascal&#39;: snake_to_pascal,
     }
     columns = df.columns.tolist()
     df.columns = list(map(mapper[casing_type], columns))
@@ -1195,6 +1236,7 @@ Options for <code>casing_type</code>:
 <li><code><a title="pyutils.data_wrangler.transform.add_partitioning_column" href="#pyutils.data_wrangler.transform.add_partitioning_column">add_partitioning_column</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.dataframe_to_list" href="#pyutils.data_wrangler.transform.dataframe_to_list">dataframe_to_list</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.drop_columns_if_exists" href="#pyutils.data_wrangler.transform.drop_columns_if_exists">drop_columns_if_exists</a></code></li>
+<li><code><a title="pyutils.data_wrangler.transform.get_mapping_between_columns" href="#pyutils.data_wrangler.transform.get_mapping_between_columns">get_mapping_between_columns</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.linspace_by_index" href="#pyutils.data_wrangler.transform.linspace_by_index">linspace_by_index</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.merge_dataframes" href="#pyutils.data_wrangler.transform.merge_dataframes">merge_dataframes</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.normalize_array" href="#pyutils.data_wrangler.transform.normalize_array">normalize_array</a></code></li>

@@ -28,41 +28,82 @@
 </summary>
 <pre><code class="python">import re
 
+ALPHABETS_LOWER_CASED = list(&#39;abcdefghijklmnopqrstuvwxyz&#39;)
+ALPHABETS_UPPER_CASED = list(map(str.upper, ALPHABETS_LOWER_CASED))
+ALPHABETS = ALPHABETS_LOWER_CASED + ALPHABETS_UPPER_CASED
 
-def lcc2ucc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts lower-camel-case to upper-camel-case&#34;&#34;&#34;
+
+def camel_to_pascal(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts camel-case to pascal-case.
+    &gt;&gt;&gt; camel_to_pascal(string=&#34;helloAndGoodMorning&#34;) # Returns &#34;HelloAndGoodMorning&#34;
+    &#34;&#34;&#34;
     return string[0].upper() + string[1:]
 
 
-def ucc2lcc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts upper-camel-case to lower-camel-case&#34;&#34;&#34;
+def pascal_to_camel(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts pascal-case to camel-case.
+    &gt;&gt;&gt; pascal_to_camel(string=&#34;HelloAndGoodMorning&#34;) # Returns &#34;helloAndGoodMorning&#34;
+    &#34;&#34;&#34;
     return string[0].lower() + string[1:]
 
 
-def ucc2sc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts upper-camel-case to snake-case&#34;&#34;&#34;
+def pascal_to_snake(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts pascal-case to snake-case.
+    &gt;&gt;&gt; pascal_to_snake(string=&#34;HelloAndGoodMorning&#34;) # Returns &#34;hello_and_good_morning&#34;
+    &#34;&#34;&#34;
     words = re.findall(pattern=&#34;[A-Z][^A-Z]*&#34;, string=string)
-    words = [word.lower() for word in words]
-    return &#34;_&#34;.join(words)
+    words_lower_cased = list(map(str.lower, words))
+    return &#34;_&#34;.join(words_lower_cased)
 
 
-def lcc2sc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts lower-camel-case to snake-case&#34;&#34;&#34;
-    string_ucc = lcc2ucc(string=string)
-    return ucc2sc(string=string_ucc)
+def camel_to_snake(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts camel-case to snake-case.
+    &gt;&gt;&gt; camel_to_snake(string=&#34;helloAndGoodMorning&#34;) # Returns &#34;hello_and_good_morning&#34;
+    &#34;&#34;&#34;
+    string_in_pascal = camel_to_pascal(string=string)
+    string_in_snake = pascal_to_snake(string=string_in_pascal)
+    return string_in_snake
 
 
-def sc2ucc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts snake-case to upper-camel-case&#34;&#34;&#34;
+def snake_to_pascal(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts snake-case to pascal-case.
+    &gt;&gt;&gt; snake_to_pascal(string=&#34;hello_and_good_morning&#34;) # Returns &#34;HelloAndGoodMorning&#34;
+    &#34;&#34;&#34;
     words = string.split(&#39;_&#39;)
-    words_capitalized = [word.strip().capitalize() for word in words]
+    words_capitalized = list(map(str.capitalize, words))
     return &#34;&#34;.join(words_capitalized)
 
 
-def sc2lcc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts snake-case to lower-camel-case&#34;&#34;&#34;
-    string_ucc = sc2ucc(string=string)
-    return ucc2lcc(string=string_ucc)</code></pre>
+def snake_to_camel(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts snake-case to camel-case.
+    &gt;&gt;&gt; snake_to_camel(string=&#34;hello_and_good_morning&#34;) # Returns &#34;helloAndGoodMorning&#34;
+    &#34;&#34;&#34;
+    string_in_pascal = snake_to_pascal(string=string)
+    string_in_camel = pascal_to_camel(string=string_in_pascal)
+    return string_in_camel
+
+
+def retardify(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts given text to retardified text.
+    &gt;&gt;&gt; retardify(string=&#34;Hello, and good morning!&#34;) # Returns &#34;hElLo, AnD gOoD mOrNiNg!&#34;
+    &#34;&#34;&#34;
+    string = string.lower().strip()
+    counter = 0
+    retardified_text = &#34;&#34;
+    for character in string:
+        if character in ALPHABETS:
+            counter += 1
+            if counter % 2 == 0:
+                character = character.upper()
+        retardified_text += character
+    return retardified_text</code></pre>
 </details>
 </section>
 <section>
@@ -72,94 +113,154 @@ def sc2lcc(string: str) -&gt; str:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="pyutils.core.text_casing.lcc2sc"><code class="name flex">
-<span>def <span class="ident">lcc2sc</span></span>(<span>string: str) ‑> str</span>
+<dt id="pyutils.core.text_casing.camel_to_pascal"><code class="name flex">
+<span>def <span class="ident">camel_to_pascal</span></span>(<span>string: str) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts lower-camel-case to snake-case</p></div>
+<div class="desc"><p>Converts camel-case to pascal-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; camel_to_pascal(string=&quot;helloAndGoodMorning&quot;) # Returns &quot;HelloAndGoodMorning&quot;
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def lcc2sc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts lower-camel-case to snake-case&#34;&#34;&#34;
-    string_ucc = lcc2ucc(string=string)
-    return ucc2sc(string=string_ucc)</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.text_casing.lcc2ucc"><code class="name flex">
-<span>def <span class="ident">lcc2ucc</span></span>(<span>string: str) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Converts lower-camel-case to upper-camel-case</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def lcc2ucc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts lower-camel-case to upper-camel-case&#34;&#34;&#34;
+<pre><code class="python">def camel_to_pascal(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts camel-case to pascal-case.
+    &gt;&gt;&gt; camel_to_pascal(string=&#34;helloAndGoodMorning&#34;) # Returns &#34;HelloAndGoodMorning&#34;
+    &#34;&#34;&#34;
     return string[0].upper() + string[1:]</code></pre>
 </details>
 </dd>
-<dt id="pyutils.core.text_casing.sc2lcc"><code class="name flex">
-<span>def <span class="ident">sc2lcc</span></span>(<span>string: str) ‑> str</span>
+<dt id="pyutils.core.text_casing.camel_to_snake"><code class="name flex">
+<span>def <span class="ident">camel_to_snake</span></span>(<span>string: str) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts snake-case to lower-camel-case</p></div>
+<div class="desc"><p>Converts camel-case to snake-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; camel_to_snake(string=&quot;helloAndGoodMorning&quot;) # Returns &quot;hello_and_good_morning&quot;
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sc2lcc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts snake-case to lower-camel-case&#34;&#34;&#34;
-    string_ucc = sc2ucc(string=string)
-    return ucc2lcc(string=string_ucc)</code></pre>
+<pre><code class="python">def camel_to_snake(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts camel-case to snake-case.
+    &gt;&gt;&gt; camel_to_snake(string=&#34;helloAndGoodMorning&#34;) # Returns &#34;hello_and_good_morning&#34;
+    &#34;&#34;&#34;
+    string_in_pascal = camel_to_pascal(string=string)
+    string_in_snake = pascal_to_snake(string=string_in_pascal)
+    return string_in_snake</code></pre>
 </details>
 </dd>
-<dt id="pyutils.core.text_casing.sc2ucc"><code class="name flex">
-<span>def <span class="ident">sc2ucc</span></span>(<span>string: str) ‑> str</span>
+<dt id="pyutils.core.text_casing.pascal_to_camel"><code class="name flex">
+<span>def <span class="ident">pascal_to_camel</span></span>(<span>string: str) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts snake-case to upper-camel-case</p></div>
+<div class="desc"><p>Converts pascal-case to camel-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; pascal_to_camel(string=&quot;HelloAndGoodMorning&quot;) # Returns &quot;helloAndGoodMorning&quot;
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def sc2ucc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts snake-case to upper-camel-case&#34;&#34;&#34;
-    words = string.split(&#39;_&#39;)
-    words_capitalized = [word.strip().capitalize() for word in words]
-    return &#34;&#34;.join(words_capitalized)</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.text_casing.ucc2lcc"><code class="name flex">
-<span>def <span class="ident">ucc2lcc</span></span>(<span>string: str) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Converts upper-camel-case to lower-camel-case</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def ucc2lcc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts upper-camel-case to lower-camel-case&#34;&#34;&#34;
+<pre><code class="python">def pascal_to_camel(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts pascal-case to camel-case.
+    &gt;&gt;&gt; pascal_to_camel(string=&#34;HelloAndGoodMorning&#34;) # Returns &#34;helloAndGoodMorning&#34;
+    &#34;&#34;&#34;
     return string[0].lower() + string[1:]</code></pre>
 </details>
 </dd>
-<dt id="pyutils.core.text_casing.ucc2sc"><code class="name flex">
-<span>def <span class="ident">ucc2sc</span></span>(<span>string: str) ‑> str</span>
+<dt id="pyutils.core.text_casing.pascal_to_snake"><code class="name flex">
+<span>def <span class="ident">pascal_to_snake</span></span>(<span>string: str) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts upper-camel-case to snake-case</p></div>
+<div class="desc"><p>Converts pascal-case to snake-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; pascal_to_snake(string=&quot;HelloAndGoodMorning&quot;) # Returns &quot;hello_and_good_morning&quot;
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def ucc2sc(string: str) -&gt; str:
-    &#34;&#34;&#34;Converts upper-camel-case to snake-case&#34;&#34;&#34;
+<pre><code class="python">def pascal_to_snake(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts pascal-case to snake-case.
+    &gt;&gt;&gt; pascal_to_snake(string=&#34;HelloAndGoodMorning&#34;) # Returns &#34;hello_and_good_morning&#34;
+    &#34;&#34;&#34;
     words = re.findall(pattern=&#34;[A-Z][^A-Z]*&#34;, string=string)
-    words = [word.lower() for word in words]
-    return &#34;_&#34;.join(words)</code></pre>
+    words_lower_cased = list(map(str.lower, words))
+    return &#34;_&#34;.join(words_lower_cased)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.text_casing.retardify"><code class="name flex">
+<span>def <span class="ident">retardify</span></span>(<span>string: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts given text to retardified text.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; retardify(string=&quot;Hello, and good morning!&quot;) # Returns &quot;hElLo, AnD gOoD mOrNiNg!&quot;
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def retardify(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts given text to retardified text.
+    &gt;&gt;&gt; retardify(string=&#34;Hello, and good morning!&#34;) # Returns &#34;hElLo, AnD gOoD mOrNiNg!&#34;
+    &#34;&#34;&#34;
+    string = string.lower().strip()
+    counter = 0
+    retardified_text = &#34;&#34;
+    for character in string:
+        if character in ALPHABETS:
+            counter += 1
+            if counter % 2 == 0:
+                character = character.upper()
+        retardified_text += character
+    return retardified_text</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.text_casing.snake_to_camel"><code class="name flex">
+<span>def <span class="ident">snake_to_camel</span></span>(<span>string: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts snake-case to camel-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; snake_to_camel(string=&quot;hello_and_good_morning&quot;) # Returns &quot;helloAndGoodMorning&quot;
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def snake_to_camel(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts snake-case to camel-case.
+    &gt;&gt;&gt; snake_to_camel(string=&#34;hello_and_good_morning&#34;) # Returns &#34;helloAndGoodMorning&#34;
+    &#34;&#34;&#34;
+    string_in_pascal = snake_to_pascal(string=string)
+    string_in_camel = pascal_to_camel(string=string_in_pascal)
+    return string_in_camel</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.text_casing.snake_to_pascal"><code class="name flex">
+<span>def <span class="ident">snake_to_pascal</span></span>(<span>string: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts snake-case to pascal-case.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; snake_to_pascal(string=&quot;hello_and_good_morning&quot;) # Returns &quot;HelloAndGoodMorning&quot;
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def snake_to_pascal(string: str) -&gt; str:
+    &#34;&#34;&#34;
+    Converts snake-case to pascal-case.
+    &gt;&gt;&gt; snake_to_pascal(string=&#34;hello_and_good_morning&#34;) # Returns &#34;HelloAndGoodMorning&#34;
+    &#34;&#34;&#34;
+    words = string.split(&#39;_&#39;)
+    words_capitalized = list(map(str.capitalize, words))
+    return &#34;&#34;.join(words_capitalized)</code></pre>
 </details>
 </dd>
 </dl>
@@ -180,12 +281,13 @@ def sc2lcc(string: str) -&gt; str:
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="two-column">
-<li><code><a title="pyutils.core.text_casing.lcc2sc" href="#pyutils.core.text_casing.lcc2sc">lcc2sc</a></code></li>
-<li><code><a title="pyutils.core.text_casing.lcc2ucc" href="#pyutils.core.text_casing.lcc2ucc">lcc2ucc</a></code></li>
-<li><code><a title="pyutils.core.text_casing.sc2lcc" href="#pyutils.core.text_casing.sc2lcc">sc2lcc</a></code></li>
-<li><code><a title="pyutils.core.text_casing.sc2ucc" href="#pyutils.core.text_casing.sc2ucc">sc2ucc</a></code></li>
-<li><code><a title="pyutils.core.text_casing.ucc2lcc" href="#pyutils.core.text_casing.ucc2lcc">ucc2lcc</a></code></li>
-<li><code><a title="pyutils.core.text_casing.ucc2sc" href="#pyutils.core.text_casing.ucc2sc">ucc2sc</a></code></li>
+<li><code><a title="pyutils.core.text_casing.camel_to_pascal" href="#pyutils.core.text_casing.camel_to_pascal">camel_to_pascal</a></code></li>
+<li><code><a title="pyutils.core.text_casing.camel_to_snake" href="#pyutils.core.text_casing.camel_to_snake">camel_to_snake</a></code></li>
+<li><code><a title="pyutils.core.text_casing.pascal_to_camel" href="#pyutils.core.text_casing.pascal_to_camel">pascal_to_camel</a></code></li>
+<li><code><a title="pyutils.core.text_casing.pascal_to_snake" href="#pyutils.core.text_casing.pascal_to_snake">pascal_to_snake</a></code></li>
+<li><code><a title="pyutils.core.text_casing.retardify" href="#pyutils.core.text_casing.retardify">retardify</a></code></li>
+<li><code><a title="pyutils.core.text_casing.snake_to_camel" href="#pyutils.core.text_casing.snake_to_camel">snake_to_camel</a></code></li>
+<li><code><a title="pyutils.core.text_casing.snake_to_pascal" href="#pyutils.core.text_casing.snake_to_pascal">snake_to_pascal</a></code></li>
 </ul>
 </li>
 </ul>
