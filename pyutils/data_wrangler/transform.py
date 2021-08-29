@@ -8,12 +8,12 @@ import pandas as pd
 
 from pyutils.core.date_ops import get_current_timestamp_as_integer
 from pyutils.core.text_casing import (
-    lcc2sc,
-    lcc2ucc,
-    sc2lcc,
-    sc2ucc,
-    ucc2lcc,
-    ucc2sc,
+    camel_to_pascal,
+    camel_to_snake,
+    pascal_to_camel,
+    pascal_to_snake,
+    snake_to_camel,
+    snake_to_pascal,
 )
 from pyutils.core.type_annotations import (
     Number,
@@ -277,23 +277,23 @@ def switch_column_casing(
     """
     Switch casing of columns in DataFrame.
     Options for `casing_type`:
-        * 'sc2lcc': snake-case to lower-camel-case (Eg: some_text --> someText)
-        * 'sc2ucc': snake-case to upper-camel-case (Eg: some_text --> SomeText)
-        * 'lcc2sc': lower-camel-case to snake-case (Eg: someText --> some_text)
-        * 'lcc2ucc': lower-camel-case to upper-camel-case (Eg: someText --> SomeText)
-        * 'ucc2lcc': upper-camel-case to lower-camel-case (Eg: SomeText --> someText)
-        * 'ucc2sc': upper-camel-case to snake-case (Eg: SomeText --> some_text)
+        * 'camel_to_pascal': Converts camel-case to pascal-case (Eg: someText --> SomeText)
+        * 'camel_to_snake': Converts camel-case to snake-case (Eg: someText --> some_text)
+        * 'pascal_to_camel': Converts pascal-case to camel-case (Eg: SomeText --> someText)
+        * 'pascal_to_snake': Converts pascal-case to snake-case (Eg: SomeText --> some_text)
+        * 'snake_to_camel': Converts snake-case to camel-case (Eg: some_text --> someText)
+        * 'snake_to_pascal': Converts snake-case to pascal-case (Eg: some_text --> SomeText)
     
     Note: Expects all columns present in DataFrame to be of same casing.
     """
     df = data.copy(deep=True)
     mapper = {
-        'lcc2sc': lcc2sc,
-        'lcc2ucc': lcc2ucc,
-        'sc2lcc': sc2lcc,
-        'sc2ucc': sc2ucc,
-        'ucc2lcc': ucc2lcc,
-        'ucc2sc': ucc2sc,
+        'camel_to_pascal': camel_to_pascal,
+        'camel_to_snake': camel_to_snake,
+        'pascal_to_camel': pascal_to_camel,
+        'pascal_to_snake': pascal_to_snake,
+        'snake_to_camel': snake_to_camel,
+        'snake_to_pascal': snake_to_pascal,
     }
     columns = df.columns.tolist()
     df.columns = list(map(mapper[casing_type], columns))
