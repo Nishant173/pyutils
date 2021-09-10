@@ -37,7 +37,7 @@ from pyutils.core.string_ops import remove_last_n_characters
 def wrap_string_with_appropriate_quotes(text: str):
     &#34;&#34;&#34;
     If given string contains single quotes, then wraps it with double quotes.
-    If given string contains double quotes, then wraps it with single quotes.
+    Otherwise, wraps it with single quotes.
     &#34;&#34;&#34;
     if &#34;&#39;&#34; in text:
         return f&#39;&#34;{text}&#34;&#39;
@@ -71,9 +71,7 @@ def __wrap_value_by_sql_datatype(
     elif datatype == &#39;float&#39;:
         return float(value)
     elif datatype == &#39;string&#39;:
-        if isinstance(value, str):
-            return wrap_string_with_appropriate_quotes(text=value)
-        return f&#34;&#39;{value}&#39;&#34;
+        return wrap_string_with_appropriate_quotes(text=str(value))
     elif datatype == &#39;date&#39;:
         return f&#34;DATE(&#39;{value}&#39;)&#34;
     elif datatype == &#39;timestamp&#39;:
@@ -248,7 +246,7 @@ Evaluates Python's None and Numpy's NaN to be null values.</p>
 </code></dt>
 <dd>
 <div class="desc"><p>If given string contains single quotes, then wraps it with double quotes.
-If given string contains double quotes, then wraps it with single quotes.</p></div>
+Otherwise, wraps it with single quotes.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -256,7 +254,7 @@ If given string contains double quotes, then wraps it with single quotes.</p></d
 <pre><code class="python">def wrap_string_with_appropriate_quotes(text: str):
     &#34;&#34;&#34;
     If given string contains single quotes, then wraps it with double quotes.
-    If given string contains double quotes, then wraps it with single quotes.
+    Otherwise, wraps it with single quotes.
     &#34;&#34;&#34;
     if &#34;&#39;&#34; in text:
         return f&#39;&#34;{text}&#34;&#39;
