@@ -9,7 +9,7 @@ from pyutils.core.string_ops import remove_last_n_characters
 def wrap_string_with_appropriate_quotes(text: str):
     """
     If given string contains single quotes, then wraps it with double quotes.
-    If given string contains double quotes, then wraps it with single quotes.
+    Otherwise, wraps it with single quotes.
     """
     if "'" in text:
         return f'"{text}"'
@@ -43,9 +43,7 @@ def __wrap_value_by_sql_datatype(
     elif datatype == 'float':
         return float(value)
     elif datatype == 'string':
-        if isinstance(value, str):
-            return wrap_string_with_appropriate_quotes(text=value)
-        return f"'{value}'"
+        return wrap_string_with_appropriate_quotes(text=str(value))
     elif datatype == 'date':
         return f"DATE('{value}')"
     elif datatype == 'timestamp':
