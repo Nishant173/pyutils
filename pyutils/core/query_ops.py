@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
 
 import numpy as np
 import pandas as pd
@@ -26,6 +26,19 @@ def get_in_query_for_strings(strings: List[str]) -> str:
     return f"({comma_separated_strings})"
 
 
+def __wrap_boolean_value(value: Any) -> str:
+    """
+    If `value` is Python's native True, returns 'true'.
+    If `value` is Python's native False, returns 'false'.
+    Otherwise returns 'null'.
+    """
+    if value is True:
+        return 'true'
+    if value is False:
+        return 'false'
+    return 'null'
+
+
 def __wrap_value_by_sql_datatype(
         value: Union[int, float, str, None],
         datatype: str,
@@ -48,6 +61,8 @@ def __wrap_value_by_sql_datatype(
         return f"DATE('{value}')"
     elif datatype == 'timestamp':
         return f"TIMESTAMP('{value}')"
+    elif datatype == 'boolean':
+        return __wrap_boolean_value(value=value)
     raise ValueError(f"Got unexpected option for `datatype`: '{datatype}'")
 
 
@@ -80,6 +95,8 @@ def generate_insert_query(
     Takes in DataFrame having the data to be inserted into a table.
     Returns an INSERT query (string) for the given DataFrame.
     Evaluates Python's None and Numpy's NaN to be null values.
+    Expects column names of the DataFrame to match the column names of the table
+    where the records will be inserted.
 
     Accepted data-type options for the columns in the DataFrame:
         - integer
@@ -87,6 +104,7 @@ def generate_insert_query(
         - string
         - date: Values must be strings of format "yyyy-mm-dd". Eg: "2020-03-15"
         - timestamp: Values must be strings of format: "yyyy-mm-dd hh:mm:ss". Eg: "2020-03-15 19:30:55"
+        - boolean: Values must be Python's native True/False. Anything else will be considered as a null value.
     
     >>> generate_insert_query(
             data=data, # Any DataFrame
@@ -97,6 +115,7 @@ def generate_insert_query(
                 'date_of_birth': 'date',
                 'joined_at': 'timestamp',
                 'salary': 'float',
+                'is_recent_recruit': 'boolean',
             },
         )
     """
