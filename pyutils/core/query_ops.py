@@ -1,9 +1,9 @@
 from typing import Any, Dict, List, Union
 
-import numpy as np
 import pandas as pd
 
 from pyutils.core.string_ops import remove_last_n_characters
+from pyutils.core.utils import is_none_or_nan
 
 
 def wrap_string_with_appropriate_quotes(text: str):
@@ -44,11 +44,8 @@ def __wrap_value_by_sql_datatype(
         datatype: str,
     ) -> Union[int, float, str]:
     # Handle nulls
-    if value is None:
+    if is_none_or_nan(value=value):
         return 'null'
-    if isinstance(value, float):
-        if np.isnan(value):
-            return 'null'
     
     # Handle non-nulls
     if datatype == 'integer':

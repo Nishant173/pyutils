@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Any, Dict, List
 import random
 
 import numpy as np
@@ -7,6 +7,16 @@ from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
 )
+
+
+def is_none_or_nan(value: Any) -> bool:
+    """Returns True if value given is Python's native None or Numpy's NaN. Otherwise returns False"""
+    if value is None:
+        return True
+    if isinstance(value, float):
+        if np.isnan(value):
+            return True
+    return False
 
 
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
