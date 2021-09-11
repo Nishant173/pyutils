@@ -46,7 +46,7 @@ def __wrap_value_by_sql_datatype(
     # Handle nulls
     if value is None:
         return 'null'
-    if datatype in ['integer', 'float']:
+    if isinstance(value, float):
         if np.isnan(value):
             return 'null'
     
