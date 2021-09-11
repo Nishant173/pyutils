@@ -26,12 +26,12 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Dict, List, Union
+<pre><code class="python">from typing import Any, Dict, List, Union
 
-import numpy as np
 import pandas as pd
 
 from pyutils.core.string_ops import remove_last_n_characters
+from pyutils.core.utils import is_none_or_nan
 
 
 def wrap_string_with_appropriate_quotes(text: str):
@@ -54,16 +54,26 @@ def get_in_query_for_strings(strings: List[str]) -&gt; str:
     return f&#34;({comma_separated_strings})&#34;
 
 
+def __wrap_boolean_value(value: Any) -&gt; str:
+    &#34;&#34;&#34;
+    If `value` is Python&#39;s native True, returns &#39;true&#39;.
+    If `value` is Python&#39;s native False, returns &#39;false&#39;.
+    Otherwise returns &#39;null&#39;.
+    &#34;&#34;&#34;
+    if value is True:
+        return &#39;true&#39;
+    if value is False:
+        return &#39;false&#39;
+    return &#39;null&#39;
+
+
 def __wrap_value_by_sql_datatype(
         value: Union[int, float, str, None],
         datatype: str,
     ) -&gt; Union[int, float, str]:
     # Handle nulls
-    if value is None:
+    if is_none_or_nan(value=value):
         return &#39;null&#39;
-    if datatype in [&#39;integer&#39;, &#39;float&#39;]:
-        if np.isnan(value):
-            return &#39;null&#39;
     
     # Handle non-nulls
     if datatype == &#39;integer&#39;:
@@ -76,6 +86,8 @@ def __wrap_value_by_sql_datatype(
         return f&#34;DATE(&#39;{value}&#39;)&#34;
     elif datatype == &#39;timestamp&#39;:
         return f&#34;TIMESTAMP(&#39;{value}&#39;)&#34;
+    elif datatype == &#39;boolean&#39;:
+        return __wrap_boolean_value(value=value)
     raise ValueError(f&#34;Got unexpected option for `datatype`: &#39;{datatype}&#39;&#34;)
 
 
@@ -108,6 +120,8 @@ def generate_insert_query(
     Takes in DataFrame having the data to be inserted into a table.
     Returns an INSERT query (string) for the given DataFrame.
     Evaluates Python&#39;s None and Numpy&#39;s NaN to be null values.
+    Expects column names of the DataFrame to match the column names of the table
+    where the records will be inserted.
 
     Accepted data-type options for the columns in the DataFrame:
         - integer
@@ -115,6 +129,7 @@ def generate_insert_query(
         - string
         - date: Values must be strings of format &#34;yyyy-mm-dd&#34;. Eg: &#34;2020-03-15&#34;
         - timestamp: Values must be strings of format: &#34;yyyy-mm-dd hh:mm:ss&#34;. Eg: &#34;2020-03-15 19:30:55&#34;
+        - boolean: Values must be Python&#39;s native True/False. Anything else will be considered as a null value.
     
     &gt;&gt;&gt; generate_insert_query(
             data=data, # Any DataFrame
@@ -125,6 +140,7 @@ def generate_insert_query(
                 &#39;date_of_birth&#39;: &#39;date&#39;,
                 &#39;joined_at&#39;: &#39;timestamp&#39;,
                 &#39;salary&#39;: &#39;float&#39;,
+                &#39;is_recent_recruit&#39;: &#39;boolean&#39;,
             },
         )
     &#34;&#34;&#34;
@@ -151,13 +167,16 @@ def generate_insert_query(
 <dd>
 <div class="desc"><p>Takes in DataFrame having the data to be inserted into a table.
 Returns an INSERT query (string) for the given DataFrame.
-Evaluates Python's None and Numpy's NaN to be null values.</p>
+Evaluates Python's None and Numpy's NaN to be null values.
+Expects column names of the DataFrame to match the column names of the table
+where the records will be inserted.</p>
 <p>Accepted data-type options for the columns in the DataFrame:
 - integer
 - float
 - string
 - date: Values must be strings of format "yyyy-mm-dd". Eg: "2020-03-15"
-- timestamp: Values must be strings of format: "yyyy-mm-dd hh:mm:ss". Eg: "2020-03-15 19:30:55"</p>
+- timestamp: Values must be strings of format: "yyyy-mm-dd hh:mm:ss". Eg: "2020-03-15 19:30:55"
+- boolean: Values must be Python's native True/False. Anything else will be considered as a null value.</p>
 <pre><code class="language-python-repl">&gt;&gt;&gt; generate_insert_query(
         data=data, # Any DataFrame
         table_name='employee',
@@ -167,6 +186,7 @@ Evaluates Python's None and Numpy's NaN to be null values.</p>
             'date_of_birth': 'date',
             'joined_at': 'timestamp',
             'salary': 'float',
+            'is_recent_recruit': 'boolean',
         },
     )
 </code></pre></div>
@@ -183,6 +203,8 @@ Evaluates Python's None and Numpy's NaN to be null values.</p>
     Takes in DataFrame having the data to be inserted into a table.
     Returns an INSERT query (string) for the given DataFrame.
     Evaluates Python&#39;s None and Numpy&#39;s NaN to be null values.
+    Expects column names of the DataFrame to match the column names of the table
+    where the records will be inserted.
 
     Accepted data-type options for the columns in the DataFrame:
         - integer
@@ -190,6 +212,7 @@ Evaluates Python's None and Numpy's NaN to be null values.</p>
         - string
         - date: Values must be strings of format &#34;yyyy-mm-dd&#34;. Eg: &#34;2020-03-15&#34;
         - timestamp: Values must be strings of format: &#34;yyyy-mm-dd hh:mm:ss&#34;. Eg: &#34;2020-03-15 19:30:55&#34;
+        - boolean: Values must be Python&#39;s native True/False. Anything else will be considered as a null value.
     
     &gt;&gt;&gt; generate_insert_query(
             data=data, # Any DataFrame
@@ -200,6 +223,7 @@ Evaluates Python's None and Numpy's NaN to be null values.</p>
                 &#39;date_of_birth&#39;: &#39;date&#39;,
                 &#39;joined_at&#39;: &#39;timestamp&#39;,
                 &#39;salary&#39;: &#39;float&#39;,
+                &#39;is_recent_recruit&#39;: &#39;boolean&#39;,
             },
         )
     &#34;&#34;&#34;

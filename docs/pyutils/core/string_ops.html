@@ -26,19 +26,29 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_first_n_characters(text: str, num_chars: int) -&gt; str:
+<pre><code class="python">def __raise_error_if_num_chars_is_negative(num_chars: int) -&gt; None:
+    if num_chars &lt; 0:
+        raise ValueError(f&#34;Expected `num_chars` to be &gt;= 0, but got {num_chars}&#34;)
+    return None
+
+
+def get_first_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[:num_chars]
 
 
 def get_last_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[-num_chars:]
 
 
 def remove_first_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[num_chars:]
 
 
 def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[:-num_chars]</code></pre>
 </details>
 </section>
@@ -59,6 +69,7 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_first_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[:num_chars]</code></pre>
 </details>
 </dd>
@@ -72,6 +83,7 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_last_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[-num_chars:]</code></pre>
 </details>
 </dd>
@@ -85,6 +97,7 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove_first_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[num_chars:]</code></pre>
 </details>
 </dd>
@@ -98,6 +111,7 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
+    __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[:-num_chars]</code></pre>
 </details>
 </dd>
