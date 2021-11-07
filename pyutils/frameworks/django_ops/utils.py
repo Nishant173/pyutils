@@ -80,6 +80,37 @@ def get_params_from_request_payload(
     return dict_parsed_payload
 
 
+def get_query_params_from_request(
+        request: Request,
+        required_params: Optional[List[str]] = None,
+        optional_params: Optional[List[str]] = None,
+    ) -> Dict[str, Union[str, None]]:
+    """
+    Gets query parameters from the request (the request object must be of type `rest_framework.request.Request`).
+    Raises an exception if any of the `required_params` are missing.
+    Otherwise returns a dictionary having keys = parameter name, and values = parameter value.
+    """
+    required_params = [] if required_params is None else required_params
+    optional_params = [] if optional_params is None else optional_params
+    all_params = required_params + optional_params
+    all_unique_params = list(set(all_params))
+    if len(all_params) != len(all_unique_params):
+        raise ValueError(
+            f"The given parameters (`required_params` + `optional_params`) must be unique. All parameters received: {all_params}"
+        )
+    
+    dict_query_params = {}
+    for required_param in required_params:
+        dict_query_params[required_param] = request.query_params.get(required_param, None)
+        if dict_query_params[required_param] is None:
+            raise MissingRequiredParameterError(
+                f"The query-parameter '{required_param}' is required, but is not passed in"
+            )
+    for optional_param in optional_params:
+        dict_query_params[optional_param] = request.query_params.get(optional_param, None)
+    return dict_query_params
+
+
 def get_django_request_info(request: Request) -> Dict[str, Any]:
     """
     Takes in DRF request object of type `rest_framework.request.Request` and returns

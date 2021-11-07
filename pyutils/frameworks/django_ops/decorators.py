@@ -43,7 +43,6 @@ def api_endpoint_exception_handler(
         def wrapper(*args, **kwargs) -> Response:
             try:
                 response_obj = func(*args, **kwargs)
-                return response_obj
             except Exception as exc:
                 response = {
                     'exception_type': type(exc).__name__,
@@ -53,8 +52,9 @@ def api_endpoint_exception_handler(
                     'traceback_string': traceback.format_exc(),
                     'request_info': get_django_request_info_from_args(*args),
                 }
-                if print_response:
-                    print(f"An exception occurred. Response: {response}")
-                return Response(data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                response_obj = Response(data=response, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            if print_response:
+                print(f"Response(data={response_obj.data}, status={response_obj.status_code})")
+            return response_obj
         return wrapper
     return decorator
