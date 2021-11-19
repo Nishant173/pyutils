@@ -91,6 +91,10 @@ def generate_random_profile_data(num_records: int) -> pd.DataFrame:
     """
     Returns DataFrame having randomly generated fake data of people's profiles.
     Columns to be returned: ['job', 'company', 'ssn', 'residence', 'current_location', 'blood_group', 'website', 'username', 'name', 'sex', 'address', 'mail', 'birthdate', 'birthdatetime']
+
+    Reference:
+        - https://towardsdatascience.com/generating-fake-data-with-python-c7a32c631b2a
+        - https://www.caktusgroup.com/blog/2020/04/15/quick-guide-generating-fake-data-with-pandas/
     """
     faker = Faker()
     df = pd.DataFrame(data=(faker.profile() for _ in range(num_records)))
