@@ -1,8 +1,10 @@
 from typing import Dict, Optional
 
+from datetime import datetime
 import random
 import string
 
+from faker import Faker
 import numpy as np
 import pandas as pd
 
@@ -82,4 +84,24 @@ def generate_random_data(
     df = pd.DataFrame(data=dict_obj)
     if insert_random_nulls:
         df.mask(cond=np.random.choice([True, False], size=df.shape, p=[0.2, 0.8]), inplace=True)
+    return df
+
+
+def generate_random_profile_data(num_records: int) -> pd.DataFrame:
+    """
+    Returns DataFrame having randomly generated fake data of people's profiles.
+    Columns to be returned: ['job', 'company', 'ssn', 'residence', 'current_location', 'blood_group', 'website', 'username', 'name', 'sex', 'address', 'mail', 'birthdate', 'birthdatetime']
+    """
+    faker = Faker()
+    df = pd.DataFrame(data=(faker.profile() for _ in range(num_records)))
+    df['birthdatetime'] = df['birthdate'].apply(
+        lambda date_obj: datetime(
+            year=date_obj.year,
+            month=date_obj.month,
+            day=date_obj.day,
+            hour=random.choice(range(0, 23+1)),
+            minute=random.choice(range(0, 59+1)),
+            second=random.choice(range(0, 59+1)),
+        )
+    )
     return df
