@@ -1,3 +1,5 @@
+from typing import Optional
+
 from datetime import (
     datetime,
     timedelta,
@@ -26,6 +28,13 @@ def get_random_timestamp_as_integer() -> int:
         pattern=TIMESTAMP_INTEGER_FORMAT,
     )
     return int(ts_random)
+
+
+def get_random_timestamp(
+        start_year: Optional[int] = 1800,
+        end_year: Optional[int] = 2200,
+    ) -> datetime:
+    return datetime.strptime(randomtimestamp(start_year=start_year, end_year=end_year), "%d-%m-%Y %H:%M:%S")
 
 
 def period_to_datetime(period_obj: pd._libs.tslibs.period.Period) -> datetime:
