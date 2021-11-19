@@ -26,8 +26,27 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class InvalidDataFrameError(Exception):
+<pre><code class="python">from typing import Any, List
+
+
+def raise_exception_if_invalid_option(
+        option_name: str,
+        option_value: Any,
+        valid_option_values: List[Any],
+    ) -&gt; None:
+    &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
+    if option_value not in valid_option_values:
+        raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+    return None
+
+
+class InvalidDataFrameError(Exception):
     &#34;&#34;&#34;Error raised when an Invalid DataFrame is encountered (based on certain expectations)&#34;&#34;&#34;
+    pass
+
+
+class MissingRequiredParameterError(Exception):
+    &#34;&#34;&#34;Error raised when a required parameter is missing&#34;&#34;&#34;
     pass</code></pre>
 </details>
 </section>
@@ -36,6 +55,29 @@
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="pyutils.core.exceptions.raise_exception_if_invalid_option"><code class="name flex">
+<span>def <span class="ident">raise_exception_if_invalid_option</span></span>(<span>option_name: str, option_value: Any, valid_option_values: List[Any]) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Raises a ValueError if the <code>option_value</code> given is an invalid option; otherwise returns None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def raise_exception_if_invalid_option(
+        option_name: str,
+        option_value: Any,
+        valid_option_values: List[Any],
+    ) -&gt; None:
+    &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
+    if option_value not in valid_option_values:
+        raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+    return None</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -60,6 +102,26 @@
 <li>builtins.BaseException</li>
 </ul>
 </dd>
+<dt id="pyutils.core.exceptions.MissingRequiredParameterError"><code class="flex name class">
+<span>class <span class="ident">MissingRequiredParameterError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Error raised when a required parameter is missing</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MissingRequiredParameterError(Exception):
+    &#34;&#34;&#34;Error raised when a required parameter is missing&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
 </dl>
 </section>
 </article>
@@ -74,10 +136,18 @@
 <li><code><a title="pyutils.core" href="index.html">pyutils.core</a></code></li>
 </ul>
 </li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyutils.core.exceptions.raise_exception_if_invalid_option" href="#pyutils.core.exceptions.raise_exception_if_invalid_option">raise_exception_if_invalid_option</a></code></li>
+</ul>
+</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
 <h4><code><a title="pyutils.core.exceptions.InvalidDataFrameError" href="#pyutils.core.exceptions.InvalidDataFrameError">InvalidDataFrameError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyutils.core.exceptions.MissingRequiredParameterError" href="#pyutils.core.exceptions.MissingRequiredParameterError">MissingRequiredParameterError</a></code></h4>
 </li>
 </ul>
 </li>
