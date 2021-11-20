@@ -1,4 +1,4 @@
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 from datetime import datetime
 import random
@@ -10,6 +10,20 @@ import pandas as pd
 
 from pyutils.core.date_ops import get_random_timestamp
 from pyutils.core.exceptions import raise_exception_if_invalid_option
+
+
+def generate_random_hex_code() -> str:
+    """Generates random 6-digit hexadecimal code"""
+    choices = '0123456789ABCDEF'
+    random_hex_code = '#'
+    for _ in range(6):
+        random_hex_code += random.choice(choices)
+    return random_hex_code
+
+
+def generate_random_hex_codes(how_many: int) -> List[str]:
+    """Returns list of random 6-digit hexadecimal codes"""
+    return [generate_random_hex_code() for _ in range(how_many)]
 
 
 def generate_random_string(

@@ -92,21 +92,6 @@ def commafy_number(number: Number) -> str:
     return format(number, ",f")
 
 
-def generate_random_hex_code() -> str:
-    """Generates random 6-digit hexadecimal code"""
-    choices = '0123456789ABCDEF'
-    random_hex_code = '#'
-    for _ in range(6):
-        random_hex_code += random.choice(choices)
-    return random_hex_code
-
-
-def generate_random_hex_codes(how_many: int) -> List[str]:
-    """Returns list of random 6-digit hexadecimal codes"""
-    random_hex_codes = [generate_random_hex_code() for _ in range(how_many)]
-    return random_hex_codes
-
-
 def integerify_if_possible(number: Number) -> Number:
     """Converts whole numbers represented as floats to integers"""
     if int(number) == number:
