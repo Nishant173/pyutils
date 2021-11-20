@@ -120,21 +120,6 @@ def commafy_number(number: Number) -&gt; str:
     return format(number, &#34;,f&#34;)
 
 
-def generate_random_hex_code() -&gt; str:
-    &#34;&#34;&#34;Generates random 6-digit hexadecimal code&#34;&#34;&#34;
-    choices = &#39;0123456789ABCDEF&#39;
-    random_hex_code = &#39;#&#39;
-    for _ in range(6):
-        random_hex_code += random.choice(choices)
-    return random_hex_code
-
-
-def generate_random_hex_codes(how_many: int) -&gt; List[str]:
-    &#34;&#34;&#34;Returns list of random 6-digit hexadecimal codes&#34;&#34;&#34;
-    random_hex_codes = [generate_random_hex_code() for _ in range(how_many)]
-    return random_hex_codes
-
-
 def integerify_if_possible(number: Number) -&gt; Number:
     &#34;&#34;&#34;Converts whole numbers represented as floats to integers&#34;&#34;&#34;
     if int(number) == number:
@@ -236,39 +221,6 @@ def get_indices_for_partitioning(
     if int(number) == number:
         return format(int(number), &#34;,d&#34;)
     return format(number, &#34;,f&#34;)</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.utils.generate_random_hex_code"><code class="name flex">
-<span>def <span class="ident">generate_random_hex_code</span></span>(<span>) ‑> str</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Generates random 6-digit hexadecimal code</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def generate_random_hex_code() -&gt; str:
-    &#34;&#34;&#34;Generates random 6-digit hexadecimal code&#34;&#34;&#34;
-    choices = &#39;0123456789ABCDEF&#39;
-    random_hex_code = &#39;#&#39;
-    for _ in range(6):
-        random_hex_code += random.choice(choices)
-    return random_hex_code</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.utils.generate_random_hex_codes"><code class="name flex">
-<span>def <span class="ident">generate_random_hex_codes</span></span>(<span>how_many: int) ‑> List[str]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns list of random 6-digit hexadecimal codes</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def generate_random_hex_codes(how_many: int) -&gt; List[str]:
-    &#34;&#34;&#34;Returns list of random 6-digit hexadecimal codes&#34;&#34;&#34;
-    random_hex_codes = [generate_random_hex_code() for _ in range(how_many)]
-    return random_hex_codes</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.get_indices_for_partitioning"><code class="name flex">
@@ -562,8 +514,6 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyutils.core.utils.commafy_number" href="#pyutils.core.utils.commafy_number">commafy_number</a></code></li>
-<li><code><a title="pyutils.core.utils.generate_random_hex_code" href="#pyutils.core.utils.generate_random_hex_code">generate_random_hex_code</a></code></li>
-<li><code><a title="pyutils.core.utils.generate_random_hex_codes" href="#pyutils.core.utils.generate_random_hex_codes">generate_random_hex_codes</a></code></li>
 <li><code><a title="pyutils.core.utils.get_indices_for_partitioning" href="#pyutils.core.utils.get_indices_for_partitioning">get_indices_for_partitioning</a></code></li>
 <li><code><a title="pyutils.core.utils.get_max_of_abs_values" href="#pyutils.core.utils.get_max_of_abs_values">get_max_of_abs_values</a></code></li>
 <li><code><a title="pyutils.core.utils.get_min_of_abs_values" href="#pyutils.core.utils.get_min_of_abs_values">get_min_of_abs_values</a></code></li>

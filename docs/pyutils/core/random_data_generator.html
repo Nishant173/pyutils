@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Dict, Optional
+<pre><code class="python">from typing import Dict, List, Optional
 
 from datetime import datetime
 import random
@@ -38,6 +38,20 @@ import pandas as pd
 
 from pyutils.core.date_ops import get_random_timestamp
 from pyutils.core.exceptions import raise_exception_if_invalid_option
+
+
+def generate_random_hex_code() -&gt; str:
+    &#34;&#34;&#34;Generates random 6-digit hexadecimal code&#34;&#34;&#34;
+    choices = &#39;0123456789ABCDEF&#39;
+    random_hex_code = &#39;#&#39;
+    for _ in range(6):
+        random_hex_code += random.choice(choices)
+    return random_hex_code
+
+
+def generate_random_hex_codes(how_many: int) -&gt; List[str]:
+    &#34;&#34;&#34;Returns list of random 6-digit hexadecimal codes&#34;&#34;&#34;
+    return [generate_random_hex_code() for _ in range(how_many)]
 
 
 def generate_random_string(
@@ -231,6 +245,38 @@ def generate_random_profile_data(num_records: int) -&gt; pd.DataFrame:
     return df</code></pre>
 </details>
 </dd>
+<dt id="pyutils.core.random_data_generator.generate_random_hex_code"><code class="name flex">
+<span>def <span class="ident">generate_random_hex_code</span></span>(<span>) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates random 6-digit hexadecimal code</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_random_hex_code() -&gt; str:
+    &#34;&#34;&#34;Generates random 6-digit hexadecimal code&#34;&#34;&#34;
+    choices = &#39;0123456789ABCDEF&#39;
+    random_hex_code = &#39;#&#39;
+    for _ in range(6):
+        random_hex_code += random.choice(choices)
+    return random_hex_code</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.random_data_generator.generate_random_hex_codes"><code class="name flex">
+<span>def <span class="ident">generate_random_hex_codes</span></span>(<span>how_many: int) ‑> List[str]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of random 6-digit hexadecimal codes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_random_hex_codes(how_many: int) -&gt; List[str]:
+    &#34;&#34;&#34;Returns list of random 6-digit hexadecimal codes&#34;&#34;&#34;
+    return [generate_random_hex_code() for _ in range(how_many)]</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.random_data_generator.generate_random_profile_data"><code class="name flex">
 <span>def <span class="ident">generate_random_profile_data</span></span>(<span>num_records: int) ‑> pandas.core.frame.DataFrame</span>
 </code></dt>
@@ -317,6 +363,8 @@ Columns to be returned: ['job', 'company', 'ssn', 'residence', 'current_location
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyutils.core.random_data_generator.generate_random_data" href="#pyutils.core.random_data_generator.generate_random_data">generate_random_data</a></code></li>
+<li><code><a title="pyutils.core.random_data_generator.generate_random_hex_code" href="#pyutils.core.random_data_generator.generate_random_hex_code">generate_random_hex_code</a></code></li>
+<li><code><a title="pyutils.core.random_data_generator.generate_random_hex_codes" href="#pyutils.core.random_data_generator.generate_random_hex_codes">generate_random_hex_codes</a></code></li>
 <li><code><a title="pyutils.core.random_data_generator.generate_random_profile_data" href="#pyutils.core.random_data_generator.generate_random_profile_data">generate_random_profile_data</a></code></li>
 <li><code><a title="pyutils.core.random_data_generator.generate_random_string" href="#pyutils.core.random_data_generator.generate_random_string">generate_random_string</a></code></li>
 </ul>

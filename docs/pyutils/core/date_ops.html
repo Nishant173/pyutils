@@ -37,6 +37,9 @@ from datetime import (
 import pandas as pd
 from randomtimestamp import randomtimestamp
 
+from pyutils.core.exceptions import raise_exception_if_invalid_option
+
+
 DATE_STRING_FORMAT = &#34;%Y-%m-%d&#34; # Eg: &#34;2020-03-19&#34;
 DATETIME_STRING_FORMAT = &#34;%Y-%m-%d %H:%M:%S&#34; # Eg: &#34;2020-03-19 17:45:08&#34;
 TIMESTAMP_INTEGER_FORMAT = &#34;%Y%m%d%H%M%S&#34; # Will be converted to an integer after parsing
@@ -160,10 +163,9 @@ class DateWiseBucketer:
             date_string=&#34;2016-05-25&#34;,
             num_days_per_bucket=7,
             num_buckets=10,
-            is_inclusive=False,
         )
-    &gt;&gt;&gt; dwb.get_forward_buckets(as_strings=True)
-    &gt;&gt;&gt; dwb.get_backward_buckets(as_strings=True)
+    &gt;&gt;&gt; dwb.get_buckets(backward=False, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; dwb.get_buckets(backward=True, as_type=&#39;string&#39;)
     &#34;&#34;&#34;
     
     def __init__(
@@ -171,47 +173,46 @@ class DateWiseBucketer:
             date_string: str,
             num_days_per_bucket: int,
             num_buckets: int,
-            is_inclusive: Optional[bool] = False,
         ) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters:
+            - date_string (str): Date-string of format &#39;yyyy-mm-dd&#39;
+            - num_days_per_bucket (int): Number of days per bucket (must be &gt; 0)
+            - num_buckets (int): Number of buckets (must be &gt; 0)
+        &#34;&#34;&#34;
         self.date_string = date_string
         self.num_days_per_bucket = num_days_per_bucket
         self.num_buckets = num_buckets
-        self.is_inclusive = is_inclusive
     
     def __str__(self) -&gt; str:
-        return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets}, is_inclusive={self.is_inclusive})&#34;
+        return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets})&#34;
     
-    def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-        dt_obj = parse_date_string(date_string=self.date_string)
-        date_range_buckets = []
-        for _ in range(self.num_buckets):
-            dt_start = dt_obj
-            dt_end = dt_obj + timedelta(days=self.num_days_per_bucket - 1)
-            start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-            end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-            date_range_buckets.append((start, end))
-            if self.is_inclusive:
-                dt_obj += timedelta(days=self.num_days_per_bucket - 1)
-            else:
-                dt_obj += timedelta(days=self.num_days_per_bucket)
-        return date_range_buckets
-    
-    def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-        dt_obj = parse_date_string(date_string=self.date_string)
-        date_range_buckets = []
-        for _ in range(self.num_buckets):
-            dt_end = dt_obj
-            dt_start = dt_obj - timedelta(days=self.num_days_per_bucket - 1)
-            start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-            end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-            date_range_buckets.append((start, end))
-            if self.is_inclusive:
-                dt_obj -= timedelta(days=self.num_days_per_bucket - 1)
-            else:
-                dt_obj -= timedelta(days=self.num_days_per_bucket)
-        return date_range_buckets[::-1]
+    def get_buckets(
+            self,
+            backward: Optional[bool] = False,
+            as_type: Optional[str] = &#39;string&#39;,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+        &#34;&#34;&#34;
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+        )
+        freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
+        period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
+        dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        if backward:
+            buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+        else:
+            buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+        if as_type == &#39;date&#39;:
+            buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+        elif as_type == &#39;string&#39;:
+            buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+        return buckets
 
 
 
@@ -224,8 +225,8 @@ class MonthWiseBucketer:
             month=5,
             num_buckets=10,
         )
-    &gt;&gt;&gt; mwb.get_forward_buckets(as_strings=True)
-    &gt;&gt;&gt; mwb.get_backward_buckets(as_strings=True)
+    &gt;&gt;&gt; mwb.get_buckets(backward=False, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; mwb.get_buckets(backward=True, as_type=&#39;string&#39;)
     &#34;&#34;&#34;
 
     def __init__(
@@ -234,6 +235,12 @@ class MonthWiseBucketer:
             month: int,
             num_buckets: int,
         ) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters:
+            - year (int): Year as integer
+            - month (int): Month as integer (Range: 1-12)
+            - num_buckets (int): Number of buckets (must be &gt; 0)
+        &#34;&#34;&#34;
         self.year = year
         self.month = month
         self.num_buckets = num_buckets
@@ -241,34 +248,32 @@ class MonthWiseBucketer:
     def __str__(self) -&gt; str:
         return f&#34;MonthWiseBucketer(year={self.year}, month={self.month}, num_buckets={self.num_buckets})&#34;
     
-    def __period_obj_to_month_wise_bucket(
+    def get_buckets(
             self,
-            period_obj: pd._libs.tslibs.period.Period,
-            as_strings: bool,
-        ) -&gt; Union[Tuple[date, date], Tuple[str, str]]:
+            backward: Optional[bool] = False,
+            as_type: Optional[str] = &#39;string&#39;,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
         &#34;&#34;&#34;
-        Expects Pandas period object having last date of a month.
-        Returns tuple of (start_date, end_date), where the dates are the first and last dates of the month.
+        Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
         &#34;&#34;&#34;
-        dt_obj = period_to_datetime(period_obj=period_obj)
-        start, end = dt_obj.replace(day=1).date(), dt_obj.date()
-        if as_strings:
-            start, end = start.strftime(DATE_STRING_FORMAT), end.strftime(DATE_STRING_FORMAT)
-        return (start, end)
-    
-    def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-        start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-        period_objs = pd.date_range(start=start_date, freq=&#39;1M&#39;, periods=self.num_buckets)
-        buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
-        return buckets
-    
-    def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-        start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-        period_objs = pd.date_range(start=start_date, freq=&#39;-1M&#39;, periods=self.num_buckets)
-        buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
-        return buckets[::-1]</code></pre>
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+        )
+        period_objs = pd.date_range(
+            start=datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT),
+            freq=&#34;-1M&#34; if backward else &#34;1M&#34;,
+            periods=self.num_buckets,
+        )
+        dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        buckets = list(map(lambda dt_obj: (dt_obj.replace(day=1), dt_obj), dt_bucket_end_dates))
+        if as_type == &#39;date&#39;:
+            buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+        elif as_type == &#39;string&#39;:
+            buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+        return buckets</code></pre>
 </details>
 </section>
 <section>
@@ -513,7 +518,7 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
 <dl>
 <dt id="pyutils.core.date_ops.DateWiseBucketer"><code class="flex name class">
 <span>class <span class="ident">DateWiseBucketer</span></span>
-<span>(</span><span>date_string: str, num_days_per_bucket: int, num_buckets: int, is_inclusive: Optional[bool] = False)</span>
+<span>(</span><span>date_string: str, num_days_per_bucket: int, num_buckets: int)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class that provides functionality to get date-wise buckets of date-ranges.</p>
@@ -521,11 +526,16 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
         date_string=&quot;2016-05-25&quot;,
         num_days_per_bucket=7,
         num_buckets=10,
-        is_inclusive=False,
     )
-&gt;&gt;&gt; dwb.get_forward_buckets(as_strings=True)
-&gt;&gt;&gt; dwb.get_backward_buckets(as_strings=True)
-</code></pre></div>
+&gt;&gt;&gt; dwb.get_buckets(backward=False, as_type='string')
+&gt;&gt;&gt; dwb.get_buckets(backward=True, as_type='string')
+</code></pre>
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li>date_string (str): Date-string of format 'yyyy-mm-dd'</li>
+<li>num_days_per_bucket (int): Number of days per bucket (must be &gt; 0)</li>
+<li>num_buckets (int): Number of buckets (must be &gt; 0)</li>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -538,10 +548,9 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
             date_string=&#34;2016-05-25&#34;,
             num_days_per_bucket=7,
             num_buckets=10,
-            is_inclusive=False,
         )
-    &gt;&gt;&gt; dwb.get_forward_buckets(as_strings=True)
-    &gt;&gt;&gt; dwb.get_backward_buckets(as_strings=True)
+    &gt;&gt;&gt; dwb.get_buckets(backward=False, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; dwb.get_buckets(backward=True, as_type=&#39;string&#39;)
     &#34;&#34;&#34;
     
     def __init__(
@@ -549,100 +558,85 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
             date_string: str,
             num_days_per_bucket: int,
             num_buckets: int,
-            is_inclusive: Optional[bool] = False,
         ) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters:
+            - date_string (str): Date-string of format &#39;yyyy-mm-dd&#39;
+            - num_days_per_bucket (int): Number of days per bucket (must be &gt; 0)
+            - num_buckets (int): Number of buckets (must be &gt; 0)
+        &#34;&#34;&#34;
         self.date_string = date_string
         self.num_days_per_bucket = num_days_per_bucket
         self.num_buckets = num_buckets
-        self.is_inclusive = is_inclusive
     
     def __str__(self) -&gt; str:
-        return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets}, is_inclusive={self.is_inclusive})&#34;
+        return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets})&#34;
     
-    def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-        dt_obj = parse_date_string(date_string=self.date_string)
-        date_range_buckets = []
-        for _ in range(self.num_buckets):
-            dt_start = dt_obj
-            dt_end = dt_obj + timedelta(days=self.num_days_per_bucket - 1)
-            start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-            end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-            date_range_buckets.append((start, end))
-            if self.is_inclusive:
-                dt_obj += timedelta(days=self.num_days_per_bucket - 1)
-            else:
-                dt_obj += timedelta(days=self.num_days_per_bucket)
-        return date_range_buckets
-    
-    def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-        dt_obj = parse_date_string(date_string=self.date_string)
-        date_range_buckets = []
-        for _ in range(self.num_buckets):
-            dt_end = dt_obj
-            dt_start = dt_obj - timedelta(days=self.num_days_per_bucket - 1)
-            start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-            end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-            date_range_buckets.append((start, end))
-            if self.is_inclusive:
-                dt_obj -= timedelta(days=self.num_days_per_bucket - 1)
-            else:
-                dt_obj -= timedelta(days=self.num_days_per_bucket)
-        return date_range_buckets[::-1]</code></pre>
+    def get_buckets(
+            self,
+            backward: Optional[bool] = False,
+            as_type: Optional[str] = &#39;string&#39;,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+        &#34;&#34;&#34;
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+        )
+        freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
+        period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
+        dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        if backward:
+            buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+        else:
+            buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+        if as_type == &#39;date&#39;:
+            buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+        elif as_type == &#39;string&#39;:
+            buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+        return buckets</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="pyutils.core.date_ops.DateWiseBucketer.get_backward_buckets"><code class="name flex">
-<span>def <span class="ident">get_backward_buckets</span></span>(<span>self, as_strings: Optional[bool] = False) ‑> Union[List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
+<dt id="pyutils.core.date_ops.DateWiseBucketer.get_buckets"><code class="name flex">
+<span>def <span class="ident">get_buckets</span></span>(<span>self, backward: Optional[bool] = False, as_type: Optional[str] = 'string') ‑> Union[List[Tuple[datetime.datetime, datetime.datetime]], List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns list of tuples having (start_date, end_date) buckets</p></div>
+<div class="desc"><p>Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: 'string'.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-    &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-    dt_obj = parse_date_string(date_string=self.date_string)
-    date_range_buckets = []
-    for _ in range(self.num_buckets):
-        dt_end = dt_obj
-        dt_start = dt_obj - timedelta(days=self.num_days_per_bucket - 1)
-        start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-        end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-        date_range_buckets.append((start, end))
-        if self.is_inclusive:
-            dt_obj -= timedelta(days=self.num_days_per_bucket - 1)
-        else:
-            dt_obj -= timedelta(days=self.num_days_per_bucket)
-    return date_range_buckets[::-1]</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.date_ops.DateWiseBucketer.get_forward_buckets"><code class="name flex">
-<span>def <span class="ident">get_forward_buckets</span></span>(<span>self, as_strings: Optional[bool] = False) ‑> Union[List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns list of tuples having (start_date, end_date) buckets</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-    &#34;&#34;&#34;Returns list of tuples having (start_date, end_date) buckets&#34;&#34;&#34;
-    dt_obj = parse_date_string(date_string=self.date_string)
-    date_range_buckets = []
-    for _ in range(self.num_buckets):
-        dt_start = dt_obj
-        dt_end = dt_obj + timedelta(days=self.num_days_per_bucket - 1)
-        start = to_date_string(dt_obj=dt_start) if as_strings else dt_start.date()
-        end = to_date_string(dt_obj=dt_end) if as_strings else dt_end.date()
-        date_range_buckets.append((start, end))
-        if self.is_inclusive:
-            dt_obj += timedelta(days=self.num_days_per_bucket - 1)
-        else:
-            dt_obj += timedelta(days=self.num_days_per_bucket)
-    return date_range_buckets</code></pre>
+<pre><code class="python">def get_buckets(
+        self,
+        backward: Optional[bool] = False,
+        as_type: Optional[str] = &#39;string&#39;,
+    ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
+    &#34;&#34;&#34;
+    Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+    Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_option(
+        option_name=&#39;as_type&#39;,
+        option_value=as_type,
+        valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+    )
+    freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
+    period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
+    dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+    if backward:
+        buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+    else:
+        buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+    if as_type == &#39;date&#39;:
+        buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+    elif as_type == &#39;string&#39;:
+        buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+    return buckets</code></pre>
 </details>
 </dd>
 </dl>
@@ -658,9 +652,15 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
         month=5,
         num_buckets=10,
     )
-&gt;&gt;&gt; mwb.get_forward_buckets(as_strings=True)
-&gt;&gt;&gt; mwb.get_backward_buckets(as_strings=True)
-</code></pre></div>
+&gt;&gt;&gt; mwb.get_buckets(backward=False, as_type='string')
+&gt;&gt;&gt; mwb.get_buckets(backward=True, as_type='string')
+</code></pre>
+<h2 id="parameters">Parameters</h2>
+<ul>
+<li>year (int): Year as integer</li>
+<li>month (int): Month as integer (Range: 1-12)</li>
+<li>num_buckets (int): Number of buckets (must be &gt; 0)</li>
+</ul></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -674,8 +674,8 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
             month=5,
             num_buckets=10,
         )
-    &gt;&gt;&gt; mwb.get_forward_buckets(as_strings=True)
-    &gt;&gt;&gt; mwb.get_backward_buckets(as_strings=True)
+    &gt;&gt;&gt; mwb.get_buckets(backward=False, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; mwb.get_buckets(backward=True, as_type=&#39;string&#39;)
     &#34;&#34;&#34;
 
     def __init__(
@@ -684,6 +684,12 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
             month: int,
             num_buckets: int,
         ) -&gt; None:
+        &#34;&#34;&#34;
+        Parameters:
+            - year (int): Year as integer
+            - month (int): Month as integer (Range: 1-12)
+            - num_buckets (int): Number of buckets (must be &gt; 0)
+        &#34;&#34;&#34;
         self.year = year
         self.month = month
         self.num_buckets = num_buckets
@@ -691,68 +697,70 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
     def __str__(self) -&gt; str:
         return f&#34;MonthWiseBucketer(year={self.year}, month={self.month}, num_buckets={self.num_buckets})&#34;
     
-    def __period_obj_to_month_wise_bucket(
+    def get_buckets(
             self,
-            period_obj: pd._libs.tslibs.period.Period,
-            as_strings: bool,
-        ) -&gt; Union[Tuple[date, date], Tuple[str, str]]:
+            backward: Optional[bool] = False,
+            as_type: Optional[str] = &#39;string&#39;,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
         &#34;&#34;&#34;
-        Expects Pandas period object having last date of a month.
-        Returns tuple of (start_date, end_date), where the dates are the first and last dates of the month.
+        Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
         &#34;&#34;&#34;
-        dt_obj = period_to_datetime(period_obj=period_obj)
-        start, end = dt_obj.replace(day=1).date(), dt_obj.date()
-        if as_strings:
-            start, end = start.strftime(DATE_STRING_FORMAT), end.strftime(DATE_STRING_FORMAT)
-        return (start, end)
-    
-    def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-        start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-        period_objs = pd.date_range(start=start_date, freq=&#39;1M&#39;, periods=self.num_buckets)
-        buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
-        return buckets
-    
-    def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-        &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-        start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-        period_objs = pd.date_range(start=start_date, freq=&#39;-1M&#39;, periods=self.num_buckets)
-        buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
-        return buckets[::-1]</code></pre>
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+        )
+        period_objs = pd.date_range(
+            start=datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT),
+            freq=&#34;-1M&#34; if backward else &#34;1M&#34;,
+            periods=self.num_buckets,
+        )
+        dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        buckets = list(map(lambda dt_obj: (dt_obj.replace(day=1), dt_obj), dt_bucket_end_dates))
+        if as_type == &#39;date&#39;:
+            buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+        elif as_type == &#39;string&#39;:
+            buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+        return buckets</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
-<dt id="pyutils.core.date_ops.MonthWiseBucketer.get_backward_buckets"><code class="name flex">
-<span>def <span class="ident">get_backward_buckets</span></span>(<span>self, as_strings: Optional[bool] = False) ‑> Union[List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
+<dt id="pyutils.core.date_ops.MonthWiseBucketer.get_buckets"><code class="name flex">
+<span>def <span class="ident">get_buckets</span></span>(<span>self, backward: Optional[bool] = False, as_type: Optional[str] = 'string') ‑> Union[List[Tuple[datetime.datetime, datetime.datetime]], List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns list of tuples having month-wise (start_date, end_date) buckets</p></div>
+<div class="desc"><p>Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: 'string'.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_backward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-    &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-    start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-    period_objs = pd.date_range(start=start_date, freq=&#39;-1M&#39;, periods=self.num_buckets)
-    buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
-    return buckets[::-1]</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.date_ops.MonthWiseBucketer.get_forward_buckets"><code class="name flex">
-<span>def <span class="ident">get_forward_buckets</span></span>(<span>self, as_strings: Optional[bool] = False) ‑> Union[List[Tuple[datetime.date, datetime.date]], List[Tuple[str, str]]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns list of tuples having month-wise (start_date, end_date) buckets</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_forward_buckets(self, as_strings: Optional[bool] = False) -&gt; Union[List[Tuple[date, date]], List[Tuple[str, str]]]:
-    &#34;&#34;&#34;Returns list of tuples having month-wise (start_date, end_date) buckets&#34;&#34;&#34;
-    start_date = datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT)
-    period_objs = pd.date_range(start=start_date, freq=&#39;1M&#39;, periods=self.num_buckets)
-    buckets = [self.__period_obj_to_month_wise_bucket(period_obj=period_obj, as_strings=as_strings) for period_obj in period_objs]
+<pre><code class="python">def get_buckets(
+        self,
+        backward: Optional[bool] = False,
+        as_type: Optional[str] = &#39;string&#39;,
+    ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[date, date]], List[Tuple[str, str]]]:
+    &#34;&#34;&#34;
+    Returns list of tuples of (start_date, end_date) buckets. They will always be in ascending order.
+    Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_option(
+        option_name=&#39;as_type&#39;,
+        option_value=as_type,
+        valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+    )
+    period_objs = pd.date_range(
+        start=datetime(year=self.year, month=self.month, day=1).strftime(DATE_STRING_FORMAT),
+        freq=&#34;-1M&#34; if backward else &#34;1M&#34;,
+        periods=self.num_buckets,
+    )
+    dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+    buckets = list(map(lambda dt_obj: (dt_obj.replace(day=1), dt_obj), dt_bucket_end_dates))
+    if as_type == &#39;date&#39;:
+        buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
+    elif as_type == &#39;string&#39;:
+        buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
     return buckets</code></pre>
 </details>
 </dd>
@@ -793,15 +801,13 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
 <li>
 <h4><code><a title="pyutils.core.date_ops.DateWiseBucketer" href="#pyutils.core.date_ops.DateWiseBucketer">DateWiseBucketer</a></code></h4>
 <ul class="">
-<li><code><a title="pyutils.core.date_ops.DateWiseBucketer.get_backward_buckets" href="#pyutils.core.date_ops.DateWiseBucketer.get_backward_buckets">get_backward_buckets</a></code></li>
-<li><code><a title="pyutils.core.date_ops.DateWiseBucketer.get_forward_buckets" href="#pyutils.core.date_ops.DateWiseBucketer.get_forward_buckets">get_forward_buckets</a></code></li>
+<li><code><a title="pyutils.core.date_ops.DateWiseBucketer.get_buckets" href="#pyutils.core.date_ops.DateWiseBucketer.get_buckets">get_buckets</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="pyutils.core.date_ops.MonthWiseBucketer" href="#pyutils.core.date_ops.MonthWiseBucketer">MonthWiseBucketer</a></code></h4>
 <ul class="">
-<li><code><a title="pyutils.core.date_ops.MonthWiseBucketer.get_backward_buckets" href="#pyutils.core.date_ops.MonthWiseBucketer.get_backward_buckets">get_backward_buckets</a></code></li>
-<li><code><a title="pyutils.core.date_ops.MonthWiseBucketer.get_forward_buckets" href="#pyutils.core.date_ops.MonthWiseBucketer.get_forward_buckets">get_forward_buckets</a></code></li>
+<li><code><a title="pyutils.core.date_ops.MonthWiseBucketer.get_buckets" href="#pyutils.core.date_ops.MonthWiseBucketer.get_buckets">get_buckets</a></code></li>
 </ul>
 </li>
 </ul>
