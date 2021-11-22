@@ -203,11 +203,12 @@ class DateWiseBucketer:
         )
         freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
         period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
-        dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
         if backward:
-            buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+            dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+            dt_bucket_start_dates = list(map(lambda dt_obj: dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_bucket_end_dates))
         else:
-            buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+            dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
         if as_type == &#39;date&#39;:
             buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
         elif as_type == &#39;string&#39;:
@@ -588,11 +589,12 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
         )
         freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
         period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
-        dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
         if backward:
-            buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+            dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+            dt_bucket_start_dates = list(map(lambda dt_obj: dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_bucket_end_dates))
         else:
-            buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+            dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
         if as_type == &#39;date&#39;:
             buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
         elif as_type == &#39;string&#39;:
@@ -627,11 +629,12 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
     )
     freq = f&#34;-{self.num_days_per_bucket}D&#34; if backward else f&#34;{self.num_days_per_bucket}D&#34;
     period_objs = pd.date_range(start=self.date_string, freq=freq, periods=self.num_buckets)
-    dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
     if backward:
-        buckets = list(map(lambda dt_obj: (dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_obj), dt_bucket_start_dates))
+        dt_bucket_end_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+        dt_bucket_start_dates = list(map(lambda dt_obj: dt_obj - timedelta(days=self.num_days_per_bucket - 1), dt_bucket_end_dates))
     else:
-        buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
+        dt_bucket_start_dates = sorted(list(map(period_to_datetime, period_objs)), reverse=False)
+    buckets = list(map(lambda dt_obj: (dt_obj, dt_obj + timedelta(days=self.num_days_per_bucket - 1)), dt_bucket_start_dates))
     if as_type == &#39;date&#39;:
         buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
     elif as_type == &#39;string&#39;:
