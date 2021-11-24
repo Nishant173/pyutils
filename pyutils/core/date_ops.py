@@ -9,7 +9,10 @@ from datetime import (
 import pandas as pd
 from randomtimestamp import randomtimestamp
 
-from pyutils.core.exceptions import raise_exception_if_invalid_option
+from pyutils.core.exceptions import (
+    raise_exception_if_invalid_option,
+    raise_exception_if_invalid_type,
+)
 
 
 DATE_STRING_FORMAT = "%Y-%m-%d" # Eg: "2020-03-19"
@@ -152,9 +155,43 @@ class DateWiseBucketer:
             - num_days_per_bucket (int): Number of days per bucket (must be > 0)
             - num_buckets (int): Number of buckets (must be > 0)
         """
+        self.__raise_exception_if_invalid_input(
+            date_string=date_string,
+            num_days_per_bucket=num_days_per_bucket,
+            num_buckets=num_buckets,
+        )
         self.date_string = date_string
         self.num_days_per_bucket = num_days_per_bucket
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            date_string: str,
+            num_days_per_bucket: int,
+            num_buckets: int,
+        ) -> None:
+        """Raises an exception if any of the given inputs are invalid; otherwise returns None"""
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name='date_string', parameter_value=date_string, expected_type=str,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name='num_days_per_bucket', parameter_value=num_days_per_bucket, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name='num_buckets', parameter_value=num_buckets, expected_type=int,
+        )
+
+        # Value errors
+        try:
+            _ = datetime.strptime(date_string, DATE_STRING_FORMAT)
+        except ValueError:
+            raise ValueError(f"Expected `date_string` to be a valid date string of format 'yyyy-mm-dd', but got '{date_string}'")
+        if num_days_per_bucket <= 0:
+            raise ValueError(f"Expected `num_days_per_bucket` to be > 0, but got {num_days_per_bucket}")
+        if num_buckets <= 0:
+            raise ValueError(f"Expected `num_buckets` to be > 0, but got {num_buckets}")
+        return None
     
     def __str__(self) -> str:
         return f"DateWiseBucketer(date_string='{self.date_string}', num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets})"
@@ -214,9 +251,41 @@ class MonthWiseBucketer:
             - month (int): Month as integer (Range: 1-12)
             - num_buckets (int): Number of buckets (must be > 0)
         """
+        self.__raise_exception_if_invalid_input(
+            year=year,
+            month=month,
+            num_buckets=num_buckets,
+        )
         self.year = year
         self.month = month
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            year: int,
+            month: int,
+            num_buckets: int,
+        ) -> None:
+        """Raises an exception if any of the given inputs are invalid; otherwise returns None"""
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name='year', parameter_value=year, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name='month', parameter_value=month, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name='num_buckets', parameter_value=num_buckets, expected_type=int,
+        )
+        
+        # Value errors
+        if year <= 0:
+            raise ValueError(f"Expected `year` to be > 0, but got {year}")
+        if not (1 <= month <= 12):
+            raise ValueError(f"Expected `month` to be in range 1-12, but got {month}")
+        if num_buckets <= 0:
+            raise ValueError(f"Expected `num_buckets` to be > 0, but got {num_buckets}")
+        return None
     
     def __str__(self) -> str:
         return f"MonthWiseBucketer(year={self.year}, month={self.month}, num_buckets={self.num_buckets})"
