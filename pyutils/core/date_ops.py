@@ -135,12 +135,12 @@ class DateWiseBucketer:
     Class that provides functionality to get date-wise buckets of date-ranges.
     
     >>> dwb = DateWiseBucketer(
-            date_string="2016-05-25",
-            num_days_per_bucket=7,
-            num_buckets=10,
+            date_string="2020-01-01",
+            num_days_per_bucket=8,
+            num_buckets=3,
         )
-    >>> dwb.get_buckets(backward=False, as_type='string')
-    >>> dwb.get_buckets(backward=True, as_type='string')
+    >>> dwb.get_buckets(backward=False) # Returns [('2020-01-01', '2020-01-08'), ('2020-01-09', '2020-01-16'), ('2020-01-17', '2020-01-24')]
+    >>> dwb.get_buckets(backward=True) # Returns [('2019-12-09', '2019-12-16'), ('2019-12-17', '2019-12-24'), ('2019-12-25', '2020-01-01')]
     """
     
     def __init__(
@@ -231,12 +231,12 @@ class MonthWiseBucketer:
     Class that provides functionality to get month-wise buckets of date-ranges.
     
     >>> mwb = MonthWiseBucketer(
-            year=2016,
-            month=5,
-            num_buckets=10,
+            year=2020,
+            month=1,
+            num_buckets=3,
         )
-    >>> mwb.get_buckets(backward=False, as_type='string')
-    >>> mwb.get_buckets(backward=True, as_type='string')
+    >>> mwb.get_buckets(backward=False) # Returns [('2020-01-01', '2020-01-31'), ('2020-02-01', '2020-02-29'), ('2020-03-01', '2020-03-31')]
+    >>> mwb.get_buckets(backward=True) # Returns [('2019-11-01', '2019-11-30'), ('2019-12-01', '2019-12-31'), ('2020-01-01', '2020-01-31')]
     """
 
     def __init__(
