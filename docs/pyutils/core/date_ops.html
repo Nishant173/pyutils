@@ -37,7 +37,10 @@ from datetime import (
 import pandas as pd
 from randomtimestamp import randomtimestamp
 
-from pyutils.core.exceptions import raise_exception_if_invalid_option
+from pyutils.core.exceptions import (
+    raise_exception_if_invalid_option,
+    raise_exception_if_invalid_type,
+)
 
 
 DATE_STRING_FORMAT = &#34;%Y-%m-%d&#34; # Eg: &#34;2020-03-19&#34;
@@ -160,12 +163,12 @@ class DateWiseBucketer:
     Class that provides functionality to get date-wise buckets of date-ranges.
     
     &gt;&gt;&gt; dwb = DateWiseBucketer(
-            date_string=&#34;2016-05-25&#34;,
-            num_days_per_bucket=7,
-            num_buckets=10,
+            date_string=&#34;2020-01-01&#34;,
+            num_days_per_bucket=8,
+            num_buckets=3,
         )
-    &gt;&gt;&gt; dwb.get_buckets(backward=False, as_type=&#39;string&#39;)
-    &gt;&gt;&gt; dwb.get_buckets(backward=True, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; dwb.get_buckets(backward=False) # Returns [(&#39;2020-01-01&#39;, &#39;2020-01-08&#39;), (&#39;2020-01-09&#39;, &#39;2020-01-16&#39;), (&#39;2020-01-17&#39;, &#39;2020-01-24&#39;)]
+    &gt;&gt;&gt; dwb.get_buckets(backward=True) # Returns [(&#39;2019-12-09&#39;, &#39;2019-12-16&#39;), (&#39;2019-12-17&#39;, &#39;2019-12-24&#39;), (&#39;2019-12-25&#39;, &#39;2020-01-01&#39;)]
     &#34;&#34;&#34;
     
     def __init__(
@@ -180,9 +183,43 @@ class DateWiseBucketer:
             - num_days_per_bucket (int): Number of days per bucket (must be &gt; 0)
             - num_buckets (int): Number of buckets (must be &gt; 0)
         &#34;&#34;&#34;
+        self.__raise_exception_if_invalid_input(
+            date_string=date_string,
+            num_days_per_bucket=num_days_per_bucket,
+            num_buckets=num_buckets,
+        )
         self.date_string = date_string
         self.num_days_per_bucket = num_days_per_bucket
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            date_string: str,
+            num_days_per_bucket: int,
+            num_buckets: int,
+        ) -&gt; None:
+        &#34;&#34;&#34;Raises an exception if any of the given inputs are invalid; otherwise returns None&#34;&#34;&#34;
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;date_string&#39;, parameter_value=date_string, expected_type=str,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_days_per_bucket&#39;, parameter_value=num_days_per_bucket, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_buckets&#39;, parameter_value=num_buckets, expected_type=int,
+        )
+
+        # Value errors
+        try:
+            _ = datetime.strptime(date_string, DATE_STRING_FORMAT)
+        except ValueError:
+            raise ValueError(f&#34;Expected `date_string` to be a valid date string of format &#39;yyyy-mm-dd&#39;, but got &#39;{date_string}&#39;&#34;)
+        if num_days_per_bucket &lt;= 0:
+            raise ValueError(f&#34;Expected `num_days_per_bucket` to be &gt; 0, but got {num_days_per_bucket}&#34;)
+        if num_buckets &lt;= 0:
+            raise ValueError(f&#34;Expected `num_buckets` to be &gt; 0, but got {num_buckets}&#34;)
+        return None
     
     def __str__(self) -&gt; str:
         return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets})&#34;
@@ -222,12 +259,12 @@ class MonthWiseBucketer:
     Class that provides functionality to get month-wise buckets of date-ranges.
     
     &gt;&gt;&gt; mwb = MonthWiseBucketer(
-            year=2016,
-            month=5,
-            num_buckets=10,
+            year=2020,
+            month=1,
+            num_buckets=3,
         )
-    &gt;&gt;&gt; mwb.get_buckets(backward=False, as_type=&#39;string&#39;)
-    &gt;&gt;&gt; mwb.get_buckets(backward=True, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; mwb.get_buckets(backward=False) # Returns [(&#39;2020-01-01&#39;, &#39;2020-01-31&#39;), (&#39;2020-02-01&#39;, &#39;2020-02-29&#39;), (&#39;2020-03-01&#39;, &#39;2020-03-31&#39;)]
+    &gt;&gt;&gt; mwb.get_buckets(backward=True) # Returns [(&#39;2019-11-01&#39;, &#39;2019-11-30&#39;), (&#39;2019-12-01&#39;, &#39;2019-12-31&#39;), (&#39;2020-01-01&#39;, &#39;2020-01-31&#39;)]
     &#34;&#34;&#34;
 
     def __init__(
@@ -242,9 +279,41 @@ class MonthWiseBucketer:
             - month (int): Month as integer (Range: 1-12)
             - num_buckets (int): Number of buckets (must be &gt; 0)
         &#34;&#34;&#34;
+        self.__raise_exception_if_invalid_input(
+            year=year,
+            month=month,
+            num_buckets=num_buckets,
+        )
         self.year = year
         self.month = month
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            year: int,
+            month: int,
+            num_buckets: int,
+        ) -&gt; None:
+        &#34;&#34;&#34;Raises an exception if any of the given inputs are invalid; otherwise returns None&#34;&#34;&#34;
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;year&#39;, parameter_value=year, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;month&#39;, parameter_value=month, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_buckets&#39;, parameter_value=num_buckets, expected_type=int,
+        )
+        
+        # Value errors
+        if year &lt;= 0:
+            raise ValueError(f&#34;Expected `year` to be &gt; 0, but got {year}&#34;)
+        if not (1 &lt;= month &lt;= 12):
+            raise ValueError(f&#34;Expected `month` to be in range 1-12, but got {month}&#34;)
+        if num_buckets &lt;= 0:
+            raise ValueError(f&#34;Expected `num_buckets` to be &gt; 0, but got {num_buckets}&#34;)
+        return None
     
     def __str__(self) -&gt; str:
         return f&#34;MonthWiseBucketer(year={self.year}, month={self.month}, num_buckets={self.num_buckets})&#34;
@@ -524,12 +593,12 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
 <dd>
 <div class="desc"><p>Class that provides functionality to get date-wise buckets of date-ranges.</p>
 <pre><code class="language-python-repl">&gt;&gt;&gt; dwb = DateWiseBucketer(
-        date_string=&quot;2016-05-25&quot;,
-        num_days_per_bucket=7,
-        num_buckets=10,
+        date_string=&quot;2020-01-01&quot;,
+        num_days_per_bucket=8,
+        num_buckets=3,
     )
-&gt;&gt;&gt; dwb.get_buckets(backward=False, as_type='string')
-&gt;&gt;&gt; dwb.get_buckets(backward=True, as_type='string')
+&gt;&gt;&gt; dwb.get_buckets(backward=False) # Returns [('2020-01-01', '2020-01-08'), ('2020-01-09', '2020-01-16'), ('2020-01-17', '2020-01-24')]
+&gt;&gt;&gt; dwb.get_buckets(backward=True) # Returns [('2019-12-09', '2019-12-16'), ('2019-12-17', '2019-12-24'), ('2019-12-25', '2020-01-01')]
 </code></pre>
 <h2 id="parameters">Parameters</h2>
 <ul>
@@ -546,12 +615,12 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
     Class that provides functionality to get date-wise buckets of date-ranges.
     
     &gt;&gt;&gt; dwb = DateWiseBucketer(
-            date_string=&#34;2016-05-25&#34;,
-            num_days_per_bucket=7,
-            num_buckets=10,
+            date_string=&#34;2020-01-01&#34;,
+            num_days_per_bucket=8,
+            num_buckets=3,
         )
-    &gt;&gt;&gt; dwb.get_buckets(backward=False, as_type=&#39;string&#39;)
-    &gt;&gt;&gt; dwb.get_buckets(backward=True, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; dwb.get_buckets(backward=False) # Returns [(&#39;2020-01-01&#39;, &#39;2020-01-08&#39;), (&#39;2020-01-09&#39;, &#39;2020-01-16&#39;), (&#39;2020-01-17&#39;, &#39;2020-01-24&#39;)]
+    &gt;&gt;&gt; dwb.get_buckets(backward=True) # Returns [(&#39;2019-12-09&#39;, &#39;2019-12-16&#39;), (&#39;2019-12-17&#39;, &#39;2019-12-24&#39;), (&#39;2019-12-25&#39;, &#39;2020-01-01&#39;)]
     &#34;&#34;&#34;
     
     def __init__(
@@ -566,9 +635,43 @@ Note: The 'hour' in the <code>datetime_string</code> must be of 24 hour format (
             - num_days_per_bucket (int): Number of days per bucket (must be &gt; 0)
             - num_buckets (int): Number of buckets (must be &gt; 0)
         &#34;&#34;&#34;
+        self.__raise_exception_if_invalid_input(
+            date_string=date_string,
+            num_days_per_bucket=num_days_per_bucket,
+            num_buckets=num_buckets,
+        )
         self.date_string = date_string
         self.num_days_per_bucket = num_days_per_bucket
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            date_string: str,
+            num_days_per_bucket: int,
+            num_buckets: int,
+        ) -&gt; None:
+        &#34;&#34;&#34;Raises an exception if any of the given inputs are invalid; otherwise returns None&#34;&#34;&#34;
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;date_string&#39;, parameter_value=date_string, expected_type=str,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_days_per_bucket&#39;, parameter_value=num_days_per_bucket, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_buckets&#39;, parameter_value=num_buckets, expected_type=int,
+        )
+
+        # Value errors
+        try:
+            _ = datetime.strptime(date_string, DATE_STRING_FORMAT)
+        except ValueError:
+            raise ValueError(f&#34;Expected `date_string` to be a valid date string of format &#39;yyyy-mm-dd&#39;, but got &#39;{date_string}&#39;&#34;)
+        if num_days_per_bucket &lt;= 0:
+            raise ValueError(f&#34;Expected `num_days_per_bucket` to be &gt; 0, but got {num_days_per_bucket}&#34;)
+        if num_buckets &lt;= 0:
+            raise ValueError(f&#34;Expected `num_buckets` to be &gt; 0, but got {num_buckets}&#34;)
+        return None
     
     def __str__(self) -&gt; str:
         return f&#34;DateWiseBucketer(date_string=&#39;{self.date_string}&#39;, num_days_per_bucket={self.num_days_per_bucket}, num_buckets={self.num_buckets})&#34;
@@ -651,12 +754,12 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
 <dd>
 <div class="desc"><p>Class that provides functionality to get month-wise buckets of date-ranges.</p>
 <pre><code class="language-python-repl">&gt;&gt;&gt; mwb = MonthWiseBucketer(
-        year=2016,
-        month=5,
-        num_buckets=10,
+        year=2020,
+        month=1,
+        num_buckets=3,
     )
-&gt;&gt;&gt; mwb.get_buckets(backward=False, as_type='string')
-&gt;&gt;&gt; mwb.get_buckets(backward=True, as_type='string')
+&gt;&gt;&gt; mwb.get_buckets(backward=False) # Returns [('2020-01-01', '2020-01-31'), ('2020-02-01', '2020-02-29'), ('2020-03-01', '2020-03-31')]
+&gt;&gt;&gt; mwb.get_buckets(backward=True) # Returns [('2019-11-01', '2019-11-30'), ('2019-12-01', '2019-12-31'), ('2020-01-01', '2020-01-31')]
 </code></pre>
 <h2 id="parameters">Parameters</h2>
 <ul>
@@ -673,12 +776,12 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
     Class that provides functionality to get month-wise buckets of date-ranges.
     
     &gt;&gt;&gt; mwb = MonthWiseBucketer(
-            year=2016,
-            month=5,
-            num_buckets=10,
+            year=2020,
+            month=1,
+            num_buckets=3,
         )
-    &gt;&gt;&gt; mwb.get_buckets(backward=False, as_type=&#39;string&#39;)
-    &gt;&gt;&gt; mwb.get_buckets(backward=True, as_type=&#39;string&#39;)
+    &gt;&gt;&gt; mwb.get_buckets(backward=False) # Returns [(&#39;2020-01-01&#39;, &#39;2020-01-31&#39;), (&#39;2020-02-01&#39;, &#39;2020-02-29&#39;), (&#39;2020-03-01&#39;, &#39;2020-03-31&#39;)]
+    &gt;&gt;&gt; mwb.get_buckets(backward=True) # Returns [(&#39;2019-11-01&#39;, &#39;2019-11-30&#39;), (&#39;2019-12-01&#39;, &#39;2019-12-31&#39;), (&#39;2020-01-01&#39;, &#39;2020-01-31&#39;)]
     &#34;&#34;&#34;
 
     def __init__(
@@ -693,9 +796,41 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
             - month (int): Month as integer (Range: 1-12)
             - num_buckets (int): Number of buckets (must be &gt; 0)
         &#34;&#34;&#34;
+        self.__raise_exception_if_invalid_input(
+            year=year,
+            month=month,
+            num_buckets=num_buckets,
+        )
         self.year = year
         self.month = month
         self.num_buckets = num_buckets
+    
+    def __raise_exception_if_invalid_input(
+            self,
+            year: int,
+            month: int,
+            num_buckets: int,
+        ) -&gt; None:
+        &#34;&#34;&#34;Raises an exception if any of the given inputs are invalid; otherwise returns None&#34;&#34;&#34;
+        # Type errors
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;year&#39;, parameter_value=year, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;month&#39;, parameter_value=month, expected_type=int,
+        )
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_buckets&#39;, parameter_value=num_buckets, expected_type=int,
+        )
+        
+        # Value errors
+        if year &lt;= 0:
+            raise ValueError(f&#34;Expected `year` to be &gt; 0, but got {year}&#34;)
+        if not (1 &lt;= month &lt;= 12):
+            raise ValueError(f&#34;Expected `month` to be in range 1-12, but got {month}&#34;)
+        if num_buckets &lt;= 0:
+            raise ValueError(f&#34;Expected `num_buckets` to be &gt; 0, but got {num_buckets}&#34;)
+        return None
     
     def __str__(self) -&gt; str:
         return f&#34;MonthWiseBucketer(year={self.year}, month={self.month}, num_buckets={self.num_buckets})&#34;

@@ -53,7 +53,7 @@ def get_params_from_request_payload(
         request: Request,
         required_params: Optional[List[str]] = None,
         optional_params: Optional[List[str]] = None,
-    ) -> Dict[str, Union[str, None]]:
+    ) -> Dict[str, Union[Any, None]]:
     """
     Gets parameters from the request's payload (the request object must be of type `rest_framework.request.Request`).
     Raises an exception if any of the `required_params` are missing.

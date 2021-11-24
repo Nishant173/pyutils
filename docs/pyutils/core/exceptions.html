@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, List
+<pre><code class="python">from typing import Any, List, Type
 
 
 def raise_exception_if_invalid_option(
@@ -37,6 +37,17 @@ def raise_exception_if_invalid_option(
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
         raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+    return None
+
+
+def raise_exception_if_invalid_type(
+        parameter_name: str,
+        parameter_value: Any,
+        expected_type: Type,
+    ) -&gt; None:
+    &#34;&#34;&#34;Raises a TypeError if the `parameter_value` given is not of the type `expected_type`; otherwise returns None&#34;&#34;&#34;
+    if not isinstance(parameter_value, expected_type):
+        raise TypeError(f&#34;Expected `{parameter_name}` to be of type `{expected_type}`, but got type `{type(parameter_value)}`&#34;)
     return None
 
 
@@ -74,6 +85,26 @@ class MissingRequiredParameterError(Exception):
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
         raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+    return None</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.exceptions.raise_exception_if_invalid_type"><code class="name flex">
+<span>def <span class="ident">raise_exception_if_invalid_type</span></span>(<span>parameter_name: str, parameter_value: Any, expected_type: Type) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Raises a TypeError if the <code>parameter_value</code> given is not of the type <code>expected_type</code>; otherwise returns None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def raise_exception_if_invalid_type(
+        parameter_name: str,
+        parameter_value: Any,
+        expected_type: Type,
+    ) -&gt; None:
+    &#34;&#34;&#34;Raises a TypeError if the `parameter_value` given is not of the type `expected_type`; otherwise returns None&#34;&#34;&#34;
+    if not isinstance(parameter_value, expected_type):
+        raise TypeError(f&#34;Expected `{parameter_name}` to be of type `{expected_type}`, but got type `{type(parameter_value)}`&#34;)
     return None</code></pre>
 </details>
 </dd>
@@ -139,6 +170,7 @@ class MissingRequiredParameterError(Exception):
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyutils.core.exceptions.raise_exception_if_invalid_option" href="#pyutils.core.exceptions.raise_exception_if_invalid_option">raise_exception_if_invalid_option</a></code></li>
+<li><code><a title="pyutils.core.exceptions.raise_exception_if_invalid_type" href="#pyutils.core.exceptions.raise_exception_if_invalid_type">raise_exception_if_invalid_type</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
