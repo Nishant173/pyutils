@@ -82,6 +82,20 @@ def convert_to_datetime(
     return dt_obj
 
 
+def get_day_of_week(
+        dt_obj: Union[datetime, date],
+        shorten: Optional[bool] = False,
+    ) -> str:
+    """
+    Returns the day of the week.
+    Day of week options when `shorten` is set to False: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].
+    Day of week options when `shorten` is set to True: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].
+    """
+    if shorten:
+        return dt_obj.strftime("%a")
+    return dt_obj.strftime("%A")
+
+
 def to_date_string(dt_obj: datetime) -> str:
     """Converts datetime object to date string of format 'yyyy-mm-dd'"""
     date_string = dt_obj.strftime(DATE_STRING_FORMAT)
@@ -127,6 +141,42 @@ def convert_to_naive_timezone(dt_obj: datetime) -> datetime:
     """Converts datetime object to datetime object with a naive timezone"""
     dt_obj_naive_tz = dt_obj.replace(tzinfo=None)
     return dt_obj_naive_tz
+
+
+def get_datetime_periods_by_offset(
+        start_date: str,
+        end_date: str,
+        offset_in_seconds: int,
+    ) -> List[datetime]:
+    """
+    Returns list of datetime objects separated by the given offset (between the given date-range).
+
+    >>> get_datetime_periods_by_offset(
+            start_date="2019-05-20",
+            end_date="2019-05-22",
+            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    """
+    raise_exception_if_invalid_type(
+        parameter_name='offset_in_seconds', parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds <= 0:
+        raise ValueError(f"Expected `offset_in_seconds` to be > 0, but got {offset_in_seconds}")
+    
+    dt_end_date = parse_date_string(date_string=end_date)
+    periods_objs = pd.period_range(
+        start=start_date,
+        end=to_date_string(dt_obj=dt_end_date + timedelta(days=1)),
+        freq=f"{offset_in_seconds}S",
+    )
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if dt_objs[-1] == dt_end_date + timedelta(days=1):
+        dt_objs.pop() # Remove last item
+    return dt_objs
 
 
 

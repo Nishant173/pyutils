@@ -110,6 +110,20 @@ def convert_to_datetime(
     return dt_obj
 
 
+def get_day_of_week(
+        dt_obj: Union[datetime, date],
+        shorten: Optional[bool] = False,
+    ) -&gt; str:
+    &#34;&#34;&#34;
+    Returns the day of the week.
+    Day of week options when `shorten` is set to False: [&#39;Monday&#39;, &#39;Tuesday&#39;, &#39;Wednesday&#39;, &#39;Thursday&#39;, &#39;Friday&#39;, &#39;Saturday&#39;, &#39;Sunday&#39;].
+    Day of week options when `shorten` is set to True: [&#39;Mon&#39;, &#39;Tue&#39;, &#39;Wed&#39;, &#39;Thu&#39;, &#39;Fri&#39;, &#39;Sat&#39;, &#39;Sun&#39;].
+    &#34;&#34;&#34;
+    if shorten:
+        return dt_obj.strftime(&#34;%a&#34;)
+    return dt_obj.strftime(&#34;%A&#34;)
+
+
 def to_date_string(dt_obj: datetime) -&gt; str:
     &#34;&#34;&#34;Converts datetime object to date string of format &#39;yyyy-mm-dd&#39;&#34;&#34;&#34;
     date_string = dt_obj.strftime(DATE_STRING_FORMAT)
@@ -155,6 +169,42 @@ def convert_to_naive_timezone(dt_obj: datetime) -&gt; datetime:
     &#34;&#34;&#34;Converts datetime object to datetime object with a naive timezone&#34;&#34;&#34;
     dt_obj_naive_tz = dt_obj.replace(tzinfo=None)
     return dt_obj_naive_tz
+
+
+def get_datetime_periods_by_offset(
+        start_date: str,
+        end_date: str,
+        offset_in_seconds: int,
+    ) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Returns list of datetime objects separated by the given offset (between the given date-range).
+
+    &gt;&gt;&gt; get_datetime_periods_by_offset(
+            start_date=&#34;2019-05-20&#34;,
+            end_date=&#34;2019-05-22&#34;,
+            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_type(
+        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds &lt;= 0:
+        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
+    
+    dt_end_date = parse_date_string(date_string=end_date)
+    periods_objs = pd.period_range(
+        start=start_date,
+        end=to_date_string(dt_obj=dt_end_date + timedelta(days=1)),
+        freq=f&#34;{offset_in_seconds}S&#34;,
+    )
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if dt_objs[-1] == dt_end_date + timedelta(days=1):
+        dt_objs.pop() # Remove last item
+    return dt_objs
 
 
 
@@ -422,6 +472,87 @@ class MonthWiseBucketer:
     dt_obj = datetime.now()
     ts_now = dt_obj.strftime(TIMESTAMP_INTEGER_FORMAT)
     return int(ts_now)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.date_ops.get_datetime_periods_by_offset"><code class="name flex">
+<span>def <span class="ident">get_datetime_periods_by_offset</span></span>(<span>start_date: str, end_date: str, offset_in_seconds: int) ‑> List[datetime.datetime]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of datetime objects separated by the given offset (between the given date-range).</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; get_datetime_periods_by_offset(
+        start_date=&quot;2019-05-20&quot;,
+        end_date=&quot;2019-05-22&quot;,
+        offset_in_seconds=60*60*6, # Equivalent of 6 hours
+    )
+</code></pre>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://pandas.pydata.org/docs/reference/api/pandas.date_range.html">Pandas date range</a></li>
+<li><a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">Timeseries offset aliases</a></li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_datetime_periods_by_offset(
+        start_date: str,
+        end_date: str,
+        offset_in_seconds: int,
+    ) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Returns list of datetime objects separated by the given offset (between the given date-range).
+
+    &gt;&gt;&gt; get_datetime_periods_by_offset(
+            start_date=&#34;2019-05-20&#34;,
+            end_date=&#34;2019-05-22&#34;,
+            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_type(
+        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds &lt;= 0:
+        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
+    
+    dt_end_date = parse_date_string(date_string=end_date)
+    periods_objs = pd.period_range(
+        start=start_date,
+        end=to_date_string(dt_obj=dt_end_date + timedelta(days=1)),
+        freq=f&#34;{offset_in_seconds}S&#34;,
+    )
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if dt_objs[-1] == dt_end_date + timedelta(days=1):
+        dt_objs.pop() # Remove last item
+    return dt_objs</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.date_ops.get_day_of_week"><code class="name flex">
+<span>def <span class="ident">get_day_of_week</span></span>(<span>dt_obj: datetime.date, shorten: Optional[bool] = False) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns the day of the week.
+Day of week options when <code>shorten</code> is set to False: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].
+Day of week options when <code>shorten</code> is set to True: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_day_of_week(
+        dt_obj: Union[datetime, date],
+        shorten: Optional[bool] = False,
+    ) -&gt; str:
+    &#34;&#34;&#34;
+    Returns the day of the week.
+    Day of week options when `shorten` is set to False: [&#39;Monday&#39;, &#39;Tuesday&#39;, &#39;Wednesday&#39;, &#39;Thursday&#39;, &#39;Friday&#39;, &#39;Saturday&#39;, &#39;Sunday&#39;].
+    Day of week options when `shorten` is set to True: [&#39;Mon&#39;, &#39;Tue&#39;, &#39;Wed&#39;, &#39;Thu&#39;, &#39;Fri&#39;, &#39;Sat&#39;, &#39;Sun&#39;].
+    &#34;&#34;&#34;
+    if shorten:
+        return dt_obj.strftime(&#34;%a&#34;)
+    return dt_obj.strftime(&#34;%A&#34;)</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.date_ops.get_random_timestamp"><code class="name flex">
@@ -923,6 +1054,8 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
 <li><code><a title="pyutils.core.date_ops.convert_to_datetime" href="#pyutils.core.date_ops.convert_to_datetime">convert_to_datetime</a></code></li>
 <li><code><a title="pyutils.core.date_ops.convert_to_naive_timezone" href="#pyutils.core.date_ops.convert_to_naive_timezone">convert_to_naive_timezone</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_current_timestamp_as_integer" href="#pyutils.core.date_ops.get_current_timestamp_as_integer">get_current_timestamp_as_integer</a></code></li>
+<li><code><a title="pyutils.core.date_ops.get_datetime_periods_by_offset" href="#pyutils.core.date_ops.get_datetime_periods_by_offset">get_datetime_periods_by_offset</a></code></li>
+<li><code><a title="pyutils.core.date_ops.get_day_of_week" href="#pyutils.core.date_ops.get_day_of_week">get_day_of_week</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp" href="#pyutils.core.date_ops.get_random_timestamp">get_random_timestamp</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp_as_integer" href="#pyutils.core.date_ops.get_random_timestamp_as_integer">get_random_timestamp_as_integer</a></code></li>
 <li><code><a title="pyutils.core.date_ops.ist_to_utc" href="#pyutils.core.date_ops.ist_to_utc">ist_to_utc</a></code></li>
