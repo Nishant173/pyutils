@@ -82,6 +82,20 @@ def convert_to_datetime(
     return dt_obj
 
 
+def get_day_of_week(
+        dt_obj: Union[datetime, date],
+        shorten: Optional[bool] = False,
+    ) -> str:
+    """
+    Returns the day of the week.
+    Day of week options when `shorten` is set to False: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].
+    Day of week options when `shorten` is set to True: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].
+    """
+    if shorten:
+        return dt_obj.strftime("%a")
+    return dt_obj.strftime("%A")
+
+
 def to_date_string(dt_obj: datetime) -> str:
     """Converts datetime object to date string of format 'yyyy-mm-dd'"""
     date_string = dt_obj.strftime(DATE_STRING_FORMAT)
