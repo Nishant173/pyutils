@@ -143,7 +143,7 @@ def convert_to_naive_timezone(dt_obj: datetime) -> datetime:
     return dt_obj_naive_tz
 
 
-def get_datetime_periods_by_offset(
+def offset_between_dates(
         start_date: str,
         end_date: str,
         offset_in_seconds: int,
@@ -151,7 +151,7 @@ def get_datetime_periods_by_offset(
     """
     Returns list of datetime objects separated by the given offset (between the given date-range).
 
-    >>> get_datetime_periods_by_offset(
+    >>> offset_between_dates(
             start_date="2019-05-20",
             end_date="2019-05-22",
             offset_in_seconds=60*60*6, # Equivalent of 6 hours
@@ -179,7 +179,7 @@ def get_datetime_periods_by_offset(
     return dt_objs
 
 
-def offset_datetimes_by_period(
+def offset_between_datetimes(
         start_timestamp: str,
         end_timestamp: str,
         offset_in_seconds: int,
@@ -189,7 +189,7 @@ def offset_datetimes_by_period(
     """
     Returns list of datetime objects separated by the given offset (between the given datetime-range).
 
-    >>> offset_datetimes_by_period(
+    >>> offset_between_datetimes(
             start_timestamp="2019-05-17 13:30:00",
             end_timestamp="2019-05-17 22:30:00",
             offset_in_seconds=60*60*1, # Equivalent of 1 hour
