@@ -171,7 +171,7 @@ def convert_to_naive_timezone(dt_obj: datetime) -&gt; datetime:
     return dt_obj_naive_tz
 
 
-def get_datetime_periods_by_offset(
+def offset_between_dates(
         start_date: str,
         end_date: str,
         offset_in_seconds: int,
@@ -179,10 +179,10 @@ def get_datetime_periods_by_offset(
     &#34;&#34;&#34;
     Returns list of datetime objects separated by the given offset (between the given date-range).
 
-    &gt;&gt;&gt; get_datetime_periods_by_offset(
-            start_date=&#34;2019-05-20&#34;,
-            end_date=&#34;2019-05-22&#34;,
-            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+    &gt;&gt;&gt; offset_between_dates(
+            start_date=&#34;2019-05-15&#34;,
+            end_date=&#34;2019-05-16&#34;,
+            offset_in_seconds=60*60*8, # Equivalent of 8 hours
         )
 
     References:
@@ -204,6 +204,43 @@ def get_datetime_periods_by_offset(
     dt_objs = list(map(period_to_datetime, periods_objs))
     if dt_objs[-1] == dt_end_date + timedelta(days=1):
         dt_objs.pop() # Remove last item
+    return dt_objs
+
+
+def offset_between_datetimes(
+        start_timestamp: str,
+        end_timestamp: str,
+        offset_in_seconds: int,
+        include_start_timestamp: Optional[bool] = True,
+        include_end_timestamp: Optional[bool] = True,
+    ) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Returns list of datetime objects separated by the given offset (between the given datetime-range).
+
+    &gt;&gt;&gt; offset_between_datetimes(
+            start_timestamp=&#34;2019-05-17 13:30:00&#34;,
+            end_timestamp=&#34;2019-05-17 22:30:00&#34;,
+            offset_in_seconds=60*60*1, # Equivalent of 1 hour
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_type(
+        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds &lt;= 0:
+        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
+    
+    periods_objs = pd.period_range(start=start_timestamp, end=end_timestamp, freq=f&#34;{offset_in_seconds}S&#34;)
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if not include_start_timestamp and dt_objs:
+        if start_timestamp == to_datetime_string(dt_obj=dt_objs[0]):
+            dt_objs.pop(0)
+    if not include_end_timestamp and dt_objs:
+        if end_timestamp == to_datetime_string(dt_obj=dt_objs[-1]):
+            dt_objs.pop(-1)
     return dt_objs
 
 
@@ -474,62 +511,6 @@ class MonthWiseBucketer:
     return int(ts_now)</code></pre>
 </details>
 </dd>
-<dt id="pyutils.core.date_ops.get_datetime_periods_by_offset"><code class="name flex">
-<span>def <span class="ident">get_datetime_periods_by_offset</span></span>(<span>start_date: str, end_date: str, offset_in_seconds: int) ‑> List[datetime.datetime]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns list of datetime objects separated by the given offset (between the given date-range).</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; get_datetime_periods_by_offset(
-        start_date=&quot;2019-05-20&quot;,
-        end_date=&quot;2019-05-22&quot;,
-        offset_in_seconds=60*60*6, # Equivalent of 6 hours
-    )
-</code></pre>
-<h2 id="references">References</h2>
-<ul>
-<li><a href="https://pandas.pydata.org/docs/reference/api/pandas.date_range.html">Pandas date range</a></li>
-<li><a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">Timeseries offset aliases</a></li>
-</ul></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_datetime_periods_by_offset(
-        start_date: str,
-        end_date: str,
-        offset_in_seconds: int,
-    ) -&gt; List[datetime]:
-    &#34;&#34;&#34;
-    Returns list of datetime objects separated by the given offset (between the given date-range).
-
-    &gt;&gt;&gt; get_datetime_periods_by_offset(
-            start_date=&#34;2019-05-20&#34;,
-            end_date=&#34;2019-05-22&#34;,
-            offset_in_seconds=60*60*6, # Equivalent of 6 hours
-        )
-
-    References:
-        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
-        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
-    &#34;&#34;&#34;
-    raise_exception_if_invalid_type(
-        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
-    )
-    if offset_in_seconds &lt;= 0:
-        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
-    
-    dt_end_date = parse_date_string(date_string=end_date)
-    periods_objs = pd.period_range(
-        start=start_date,
-        end=to_date_string(dt_obj=dt_end_date + timedelta(days=1)),
-        freq=f&#34;{offset_in_seconds}S&#34;,
-    )
-    dt_objs = list(map(period_to_datetime, periods_objs))
-    if dt_objs[-1] == dt_end_date + timedelta(days=1):
-        dt_objs.pop() # Remove last item
-    return dt_objs</code></pre>
-</details>
-</dd>
 <dt id="pyutils.core.date_ops.get_day_of_week"><code class="name flex">
 <span>def <span class="ident">get_day_of_week</span></span>(<span>dt_obj: datetime.date, shorten: Optional[bool] = False) ‑> str</span>
 </code></dt>
@@ -602,6 +583,119 @@ Day of week options when <code>shorten</code> is set to True: ['Mon', 'Tue', 'We
 <pre><code class="python">def ist_to_utc(dt_obj: datetime) -&gt; datetime:
     &#34;&#34;&#34;Subtracts 5 hours and 30 minutes from datetime object&#34;&#34;&#34;
     return dt_obj - timedelta(hours=5, minutes=30)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.date_ops.offset_between_dates"><code class="name flex">
+<span>def <span class="ident">offset_between_dates</span></span>(<span>start_date: str, end_date: str, offset_in_seconds: int) ‑> List[datetime.datetime]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of datetime objects separated by the given offset (between the given date-range).</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; offset_between_dates(
+        start_date=&quot;2019-05-15&quot;,
+        end_date=&quot;2019-05-16&quot;,
+        offset_in_seconds=60*60*8, # Equivalent of 8 hours
+    )
+</code></pre>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://pandas.pydata.org/docs/reference/api/pandas.date_range.html">Pandas date range</a></li>
+<li><a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">Timeseries offset aliases</a></li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def offset_between_dates(
+        start_date: str,
+        end_date: str,
+        offset_in_seconds: int,
+    ) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Returns list of datetime objects separated by the given offset (between the given date-range).
+
+    &gt;&gt;&gt; offset_between_dates(
+            start_date=&#34;2019-05-15&#34;,
+            end_date=&#34;2019-05-16&#34;,
+            offset_in_seconds=60*60*8, # Equivalent of 8 hours
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_type(
+        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds &lt;= 0:
+        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
+    
+    dt_end_date = parse_date_string(date_string=end_date)
+    periods_objs = pd.period_range(
+        start=start_date,
+        end=to_date_string(dt_obj=dt_end_date + timedelta(days=1)),
+        freq=f&#34;{offset_in_seconds}S&#34;,
+    )
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if dt_objs[-1] == dt_end_date + timedelta(days=1):
+        dt_objs.pop() # Remove last item
+    return dt_objs</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.date_ops.offset_between_datetimes"><code class="name flex">
+<span>def <span class="ident">offset_between_datetimes</span></span>(<span>start_timestamp: str, end_timestamp: str, offset_in_seconds: int, include_start_timestamp: Optional[bool] = True, include_end_timestamp: Optional[bool] = True) ‑> List[datetime.datetime]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of datetime objects separated by the given offset (between the given datetime-range).</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; offset_between_datetimes(
+        start_timestamp=&quot;2019-05-17 13:30:00&quot;,
+        end_timestamp=&quot;2019-05-17 22:30:00&quot;,
+        offset_in_seconds=60*60*1, # Equivalent of 1 hour
+    )
+</code></pre>
+<h2 id="references">References</h2>
+<ul>
+<li><a href="https://pandas.pydata.org/docs/reference/api/pandas.date_range.html">Pandas date range</a></li>
+<li><a href="https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases">Timeseries offset aliases</a></li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def offset_between_datetimes(
+        start_timestamp: str,
+        end_timestamp: str,
+        offset_in_seconds: int,
+        include_start_timestamp: Optional[bool] = True,
+        include_end_timestamp: Optional[bool] = True,
+    ) -&gt; List[datetime]:
+    &#34;&#34;&#34;
+    Returns list of datetime objects separated by the given offset (between the given datetime-range).
+
+    &gt;&gt;&gt; offset_between_datetimes(
+            start_timestamp=&#34;2019-05-17 13:30:00&#34;,
+            end_timestamp=&#34;2019-05-17 22:30:00&#34;,
+            offset_in_seconds=60*60*1, # Equivalent of 1 hour
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_type(
+        parameter_name=&#39;offset_in_seconds&#39;, parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds &lt;= 0:
+        raise ValueError(f&#34;Expected `offset_in_seconds` to be &gt; 0, but got {offset_in_seconds}&#34;)
+    
+    periods_objs = pd.period_range(start=start_timestamp, end=end_timestamp, freq=f&#34;{offset_in_seconds}S&#34;)
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if not include_start_timestamp and dt_objs:
+        if start_timestamp == to_datetime_string(dt_obj=dt_objs[0]):
+            dt_objs.pop(0)
+    if not include_end_timestamp and dt_objs:
+        if end_timestamp == to_datetime_string(dt_obj=dt_objs[-1]):
+            dt_objs.pop(-1)
+    return dt_objs</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.date_ops.parse_date_string"><code class="name flex">
@@ -1054,11 +1148,12 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
 <li><code><a title="pyutils.core.date_ops.convert_to_datetime" href="#pyutils.core.date_ops.convert_to_datetime">convert_to_datetime</a></code></li>
 <li><code><a title="pyutils.core.date_ops.convert_to_naive_timezone" href="#pyutils.core.date_ops.convert_to_naive_timezone">convert_to_naive_timezone</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_current_timestamp_as_integer" href="#pyutils.core.date_ops.get_current_timestamp_as_integer">get_current_timestamp_as_integer</a></code></li>
-<li><code><a title="pyutils.core.date_ops.get_datetime_periods_by_offset" href="#pyutils.core.date_ops.get_datetime_periods_by_offset">get_datetime_periods_by_offset</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_day_of_week" href="#pyutils.core.date_ops.get_day_of_week">get_day_of_week</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp" href="#pyutils.core.date_ops.get_random_timestamp">get_random_timestamp</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp_as_integer" href="#pyutils.core.date_ops.get_random_timestamp_as_integer">get_random_timestamp_as_integer</a></code></li>
 <li><code><a title="pyutils.core.date_ops.ist_to_utc" href="#pyutils.core.date_ops.ist_to_utc">ist_to_utc</a></code></li>
+<li><code><a title="pyutils.core.date_ops.offset_between_dates" href="#pyutils.core.date_ops.offset_between_dates">offset_between_dates</a></code></li>
+<li><code><a title="pyutils.core.date_ops.offset_between_datetimes" href="#pyutils.core.date_ops.offset_between_datetimes">offset_between_datetimes</a></code></li>
 <li><code><a title="pyutils.core.date_ops.parse_date_string" href="#pyutils.core.date_ops.parse_date_string">parse_date_string</a></code></li>
 <li><code><a title="pyutils.core.date_ops.parse_datetime_string" href="#pyutils.core.date_ops.parse_datetime_string">parse_datetime_string</a></code></li>
 <li><code><a title="pyutils.core.date_ops.period_to_datetime" href="#pyutils.core.date_ops.period_to_datetime">period_to_datetime</a></code></li>
