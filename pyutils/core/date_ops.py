@@ -152,9 +152,9 @@ def offset_between_dates(
     Returns list of datetime objects separated by the given offset (between the given date-range).
 
     >>> offset_between_dates(
-            start_date="2019-05-20",
-            end_date="2019-05-22",
-            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+            start_date="2019-05-15",
+            end_date="2019-05-16",
+            offset_in_seconds=60*60*8, # Equivalent of 8 hours
         )
 
     References:
