@@ -143,7 +143,7 @@ def convert_to_naive_timezone(dt_obj: datetime) -> datetime:
     return dt_obj_naive_tz
 
 
-def get_datetime_periods_by_offset(
+def offset_between_dates(
         start_date: str,
         end_date: str,
         offset_in_seconds: int,
@@ -151,10 +151,10 @@ def get_datetime_periods_by_offset(
     """
     Returns list of datetime objects separated by the given offset (between the given date-range).
 
-    >>> get_datetime_periods_by_offset(
-            start_date="2019-05-20",
-            end_date="2019-05-22",
-            offset_in_seconds=60*60*6, # Equivalent of 6 hours
+    >>> offset_between_dates(
+            start_date="2019-05-15",
+            end_date="2019-05-16",
+            offset_in_seconds=60*60*8, # Equivalent of 8 hours
         )
 
     References:
@@ -176,6 +176,43 @@ def get_datetime_periods_by_offset(
     dt_objs = list(map(period_to_datetime, periods_objs))
     if dt_objs[-1] == dt_end_date + timedelta(days=1):
         dt_objs.pop() # Remove last item
+    return dt_objs
+
+
+def offset_between_datetimes(
+        start_timestamp: str,
+        end_timestamp: str,
+        offset_in_seconds: int,
+        include_start_timestamp: Optional[bool] = True,
+        include_end_timestamp: Optional[bool] = True,
+    ) -> List[datetime]:
+    """
+    Returns list of datetime objects separated by the given offset (between the given datetime-range).
+
+    >>> offset_between_datetimes(
+            start_timestamp="2019-05-17 13:30:00",
+            end_timestamp="2019-05-17 22:30:00",
+            offset_in_seconds=60*60*1, # Equivalent of 1 hour
+        )
+
+    References:
+        - [Pandas date range](https://pandas.pydata.org/docs/reference/api/pandas.date_range.html)
+        - [Timeseries offset aliases](https://pandas.pydata.org/docs/user_guide/timeseries.html#timeseries-offset-aliases)
+    """
+    raise_exception_if_invalid_type(
+        parameter_name='offset_in_seconds', parameter_value=offset_in_seconds, expected_type=int,
+    )
+    if offset_in_seconds <= 0:
+        raise ValueError(f"Expected `offset_in_seconds` to be > 0, but got {offset_in_seconds}")
+    
+    periods_objs = pd.period_range(start=start_timestamp, end=end_timestamp, freq=f"{offset_in_seconds}S")
+    dt_objs = list(map(period_to_datetime, periods_objs))
+    if not include_start_timestamp and dt_objs:
+        if start_timestamp == to_datetime_string(dt_obj=dt_objs[0]):
+            dt_objs.pop(0)
+    if not include_end_timestamp and dt_objs:
+        if end_timestamp == to_datetime_string(dt_obj=dt_objs[-1]):
+            dt_objs.pop(-1)
     return dt_objs
 
 
