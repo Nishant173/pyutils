@@ -457,29 +457,28 @@ class SecondWiseBucketer:
         self.offset_in_seconds = offset_in_seconds
     
     def __str__(self) -&gt; str:
-        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds}&#34;
+        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds})&#34;
     
-    def get_buckets(
-            self,
-            include_start_timestamp: Optional[bool] = True,
-            include_end_timestamp: Optional[bool] = True,
-            as_string: Optional[bool] = True,
-        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+    def get_buckets(self, as_type: Optional[str] = &#39;string&#39;) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
         &#34;&#34;&#34;
         Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
         &#34;&#34;&#34;
-        timestamps_by_offset = offset_between_datetimes(
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;datetime&#39;, &#39;string&#39;],
+        )
+        timestamps = offset_between_datetimes(
             start_timestamp=self.start_timestamp,
             end_timestamp=self.end_timestamp,
             offset_in_seconds=self.offset_in_seconds,
-            include_start_timestamp=include_start_timestamp,
-            include_end_timestamp=include_end_timestamp,
+            include_start_timestamp=True,
+            include_end_timestamp=True,
         )
-        if as_string:
-            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
-        buckets = [
-            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
-        ]
+        if as_type == &#39;string&#39;:
+            timestamps = list(map(to_datetime_string, timestamps))
+        buckets = [(timestamps[idx], timestamps[idx + 1]) for idx in range(len(timestamps) - 1)]
         return buckets</code></pre>
 </details>
 </section>
@@ -1219,63 +1218,62 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
         self.offset_in_seconds = offset_in_seconds
     
     def __str__(self) -&gt; str:
-        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds}&#34;
+        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds})&#34;
     
-    def get_buckets(
-            self,
-            include_start_timestamp: Optional[bool] = True,
-            include_end_timestamp: Optional[bool] = True,
-            as_string: Optional[bool] = True,
-        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+    def get_buckets(self, as_type: Optional[str] = &#39;string&#39;) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
         &#34;&#34;&#34;
         Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        Options for `as_type` are: [&#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
         &#34;&#34;&#34;
-        timestamps_by_offset = offset_between_datetimes(
+        raise_exception_if_invalid_option(
+            option_name=&#39;as_type&#39;,
+            option_value=as_type,
+            valid_option_values=[&#39;datetime&#39;, &#39;string&#39;],
+        )
+        timestamps = offset_between_datetimes(
             start_timestamp=self.start_timestamp,
             end_timestamp=self.end_timestamp,
             offset_in_seconds=self.offset_in_seconds,
-            include_start_timestamp=include_start_timestamp,
-            include_end_timestamp=include_end_timestamp,
+            include_start_timestamp=True,
+            include_end_timestamp=True,
         )
-        if as_string:
-            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
-        buckets = [
-            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
-        ]
+        if as_type == &#39;string&#39;:
+            timestamps = list(map(to_datetime_string, timestamps))
+        buckets = [(timestamps[idx], timestamps[idx + 1]) for idx in range(len(timestamps) - 1)]
         return buckets</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
 <dt id="pyutils.core.date_ops.SecondWiseBucketer.get_buckets"><code class="name flex">
-<span>def <span class="ident">get_buckets</span></span>(<span>self, include_start_timestamp: Optional[bool] = True, include_end_timestamp: Optional[bool] = True, as_string: Optional[bool] = True) ‑> Union[List[Tuple[datetime.datetime, datetime.datetime]], List[Tuple[str, str]]]</span>
+<span>def <span class="ident">get_buckets</span></span>(<span>self, as_type: Optional[str] = 'string') ‑> Union[List[Tuple[datetime.datetime, datetime.datetime]], List[Tuple[str, str]]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.</p></div>
+<div class="desc"><p>Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+Options for <code>as_type</code> are: ['datetime', 'string']. Default: 'string'.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_buckets(
-        self,
-        include_start_timestamp: Optional[bool] = True,
-        include_end_timestamp: Optional[bool] = True,
-        as_string: Optional[bool] = True,
-    ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+<pre><code class="python">def get_buckets(self, as_type: Optional[str] = &#39;string&#39;) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
     &#34;&#34;&#34;
     Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+    Options for `as_type` are: [&#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
     &#34;&#34;&#34;
-    timestamps_by_offset = offset_between_datetimes(
+    raise_exception_if_invalid_option(
+        option_name=&#39;as_type&#39;,
+        option_value=as_type,
+        valid_option_values=[&#39;datetime&#39;, &#39;string&#39;],
+    )
+    timestamps = offset_between_datetimes(
         start_timestamp=self.start_timestamp,
         end_timestamp=self.end_timestamp,
         offset_in_seconds=self.offset_in_seconds,
-        include_start_timestamp=include_start_timestamp,
-        include_end_timestamp=include_end_timestamp,
+        include_start_timestamp=True,
+        include_end_timestamp=True,
     )
-    if as_string:
-        timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
-    buckets = [
-        (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
-    ]
+    if as_type == &#39;string&#39;:
+        timestamps = list(map(to_datetime_string, timestamps))
+    buckets = [(timestamps[idx], timestamps[idx + 1]) for idx in range(len(timestamps) - 1)]
     return buckets</code></pre>
 </details>
 </dd>
