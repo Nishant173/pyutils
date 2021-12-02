@@ -430,6 +430,56 @@ class MonthWiseBucketer:
             buckets = list(map(lambda bucket: (bucket[0].date(), bucket[1].date()), buckets))
         elif as_type == &#39;string&#39;:
             buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
+        return buckets
+
+
+
+class SecondWiseBucketer:
+    &#34;&#34;&#34;
+    Class that provides functionality to get second-wise buckets of datetime-ranges.
+    
+    &gt;&gt;&gt; swb = SecondWiseBucketer(
+            start_timestamp=&#34;2019-05-18 17:00:00&#34;,
+            end_timestamp=&#34;2019-05-18 17:20:00&#34;,
+            offset_in_seconds=60*5, # Equivalent of 5 minutes
+        )
+    &gt;&gt;&gt; swb.get_buckets() # Returns [(&#39;2019-05-18 17:00:00&#39;, &#39;2019-05-18 17:05:00&#39;), (&#39;2019-05-18 17:05:00&#39;, &#39;2019-05-18 17:10:00&#39;), (&#39;2019-05-18 17:10:00&#39;, &#39;2019-05-18 17:15:00&#39;), (&#39;2019-05-18 17:15:00&#39;, &#39;2019-05-18 17:20:00&#39;)]
+    &#34;&#34;&#34;
+
+    def __init__(
+            self,
+            start_timestamp: str,
+            end_timestamp: str,
+            offset_in_seconds: int,
+        ) -&gt; None:
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.offset_in_seconds = offset_in_seconds
+    
+    def __str__(self) -&gt; str:
+        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds}&#34;
+    
+    def get_buckets(
+            self,
+            include_start_timestamp: Optional[bool] = True,
+            include_end_timestamp: Optional[bool] = True,
+            as_string: Optional[bool] = True,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        &#34;&#34;&#34;
+        timestamps_by_offset = offset_between_datetimes(
+            start_timestamp=self.start_timestamp,
+            end_timestamp=self.end_timestamp,
+            offset_in_seconds=self.offset_in_seconds,
+            include_start_timestamp=include_start_timestamp,
+            include_end_timestamp=include_end_timestamp,
+        )
+        if as_string:
+            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
+        buckets = [
+            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
+        ]
         return buckets</code></pre>
 </details>
 </section>
@@ -1129,6 +1179,108 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
 </dd>
 </dl>
 </dd>
+<dt id="pyutils.core.date_ops.SecondWiseBucketer"><code class="flex name class">
+<span>class <span class="ident">SecondWiseBucketer</span></span>
+<span>(</span><span>start_timestamp: str, end_timestamp: str, offset_in_seconds: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class that provides functionality to get second-wise buckets of datetime-ranges.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; swb = SecondWiseBucketer(
+        start_timestamp=&quot;2019-05-18 17:00:00&quot;,
+        end_timestamp=&quot;2019-05-18 17:20:00&quot;,
+        offset_in_seconds=60*5, # Equivalent of 5 minutes
+    )
+&gt;&gt;&gt; swb.get_buckets() # Returns [('2019-05-18 17:00:00', '2019-05-18 17:05:00'), ('2019-05-18 17:05:00', '2019-05-18 17:10:00'), ('2019-05-18 17:10:00', '2019-05-18 17:15:00'), ('2019-05-18 17:15:00', '2019-05-18 17:20:00')]
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class SecondWiseBucketer:
+    &#34;&#34;&#34;
+    Class that provides functionality to get second-wise buckets of datetime-ranges.
+    
+    &gt;&gt;&gt; swb = SecondWiseBucketer(
+            start_timestamp=&#34;2019-05-18 17:00:00&#34;,
+            end_timestamp=&#34;2019-05-18 17:20:00&#34;,
+            offset_in_seconds=60*5, # Equivalent of 5 minutes
+        )
+    &gt;&gt;&gt; swb.get_buckets() # Returns [(&#39;2019-05-18 17:00:00&#39;, &#39;2019-05-18 17:05:00&#39;), (&#39;2019-05-18 17:05:00&#39;, &#39;2019-05-18 17:10:00&#39;), (&#39;2019-05-18 17:10:00&#39;, &#39;2019-05-18 17:15:00&#39;), (&#39;2019-05-18 17:15:00&#39;, &#39;2019-05-18 17:20:00&#39;)]
+    &#34;&#34;&#34;
+
+    def __init__(
+            self,
+            start_timestamp: str,
+            end_timestamp: str,
+            offset_in_seconds: int,
+        ) -&gt; None:
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.offset_in_seconds = offset_in_seconds
+    
+    def __str__(self) -&gt; str:
+        return f&#34;SecondWiseBucketer(start_timestamp=&#39;{self.start_timestamp}&#39;, end_timestamp=&#39;{self.end_timestamp}&#39;, offset_in_seconds={self.offset_in_seconds}&#34;
+    
+    def get_buckets(
+            self,
+            include_start_timestamp: Optional[bool] = True,
+            include_end_timestamp: Optional[bool] = True,
+            as_string: Optional[bool] = True,
+        ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        &#34;&#34;&#34;
+        timestamps_by_offset = offset_between_datetimes(
+            start_timestamp=self.start_timestamp,
+            end_timestamp=self.end_timestamp,
+            offset_in_seconds=self.offset_in_seconds,
+            include_start_timestamp=include_start_timestamp,
+            include_end_timestamp=include_end_timestamp,
+        )
+        if as_string:
+            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
+        buckets = [
+            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
+        ]
+        return buckets</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyutils.core.date_ops.SecondWiseBucketer.get_buckets"><code class="name flex">
+<span>def <span class="ident">get_buckets</span></span>(<span>self, include_start_timestamp: Optional[bool] = True, include_end_timestamp: Optional[bool] = True, as_string: Optional[bool] = True) ‑> Union[List[Tuple[datetime.datetime, datetime.datetime]], List[Tuple[str, str]]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_buckets(
+        self,
+        include_start_timestamp: Optional[bool] = True,
+        include_end_timestamp: Optional[bool] = True,
+        as_string: Optional[bool] = True,
+    ) -&gt; Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+    &#34;&#34;&#34;
+    Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+    &#34;&#34;&#34;
+    timestamps_by_offset = offset_between_datetimes(
+        start_timestamp=self.start_timestamp,
+        end_timestamp=self.end_timestamp,
+        offset_in_seconds=self.offset_in_seconds,
+        include_start_timestamp=include_start_timestamp,
+        include_end_timestamp=include_end_timestamp,
+    )
+    if as_string:
+        timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
+    buckets = [
+        (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
+    ]
+    return buckets</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 </dl>
 </section>
 </article>
@@ -1174,6 +1326,12 @@ Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: '
 <h4><code><a title="pyutils.core.date_ops.MonthWiseBucketer" href="#pyutils.core.date_ops.MonthWiseBucketer">MonthWiseBucketer</a></code></h4>
 <ul class="">
 <li><code><a title="pyutils.core.date_ops.MonthWiseBucketer.get_buckets" href="#pyutils.core.date_ops.MonthWiseBucketer.get_buckets">get_buckets</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="pyutils.core.date_ops.SecondWiseBucketer" href="#pyutils.core.date_ops.SecondWiseBucketer">SecondWiseBucketer</a></code></h4>
+<ul class="">
+<li><code><a title="pyutils.core.date_ops.SecondWiseBucketer.get_buckets" href="#pyutils.core.date_ops.SecondWiseBucketer.get_buckets">get_buckets</a></code></li>
 </ul>
 </li>
 </ul>
