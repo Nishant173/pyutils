@@ -431,25 +431,24 @@ class SecondWiseBucketer:
     def __str__(self) -> str:
         return f"SecondWiseBucketer(start_timestamp='{self.start_timestamp}', end_timestamp='{self.end_timestamp}', offset_in_seconds={self.offset_in_seconds}"
     
-    def get_buckets(
-            self,
-            include_start_timestamp: Optional[bool] = True,
-            include_end_timestamp: Optional[bool] = True,
-            as_string: Optional[bool] = True,
-        ) -> Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+    def get_buckets(self, as_type: Optional[str] = 'string') -> Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
         """
         Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        Options for `as_type` are: ['datetime', 'string']. Default: 'string'.
         """
-        timestamps_by_offset = offset_between_datetimes(
+        raise_exception_if_invalid_option(
+            option_name='as_type',
+            option_value=as_type,
+            valid_option_values=['datetime', 'string'],
+        )
+        timestamps = offset_between_datetimes(
             start_timestamp=self.start_timestamp,
             end_timestamp=self.end_timestamp,
             offset_in_seconds=self.offset_in_seconds,
-            include_start_timestamp=include_start_timestamp,
-            include_end_timestamp=include_end_timestamp,
+            include_start_timestamp=True,
+            include_end_timestamp=True,
         )
-        if as_string:
-            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
-        buckets = [
-            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
-        ]
+        if as_type == 'string':
+            timestamps = list(map(to_datetime_string, timestamps))
+        buckets = [(timestamps[idx], timestamps[idx + 1]) for idx in range(len(timestamps) - 1)]
         return buckets
