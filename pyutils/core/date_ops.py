@@ -403,3 +403,53 @@ class MonthWiseBucketer:
         elif as_type == 'string':
             buckets = list(map(lambda bucket: (to_date_string(bucket[0]), to_date_string(bucket[1])), buckets))
         return buckets
+
+
+
+class SecondWiseBucketer:
+    """
+    Class that provides functionality to get second-wise buckets of datetime-ranges.
+    
+    >>> swb = SecondWiseBucketer(
+            start_timestamp="2019-05-18 17:00:00",
+            end_timestamp="2019-05-18 17:20:00",
+            offset_in_seconds=60*5, # Equivalent of 5 minutes
+        )
+    >>> swb.get_buckets() # Returns [('2019-05-18 17:00:00', '2019-05-18 17:05:00'), ('2019-05-18 17:05:00', '2019-05-18 17:10:00'), ('2019-05-18 17:10:00', '2019-05-18 17:15:00'), ('2019-05-18 17:15:00', '2019-05-18 17:20:00')]
+    """
+
+    def __init__(
+            self,
+            start_timestamp: str,
+            end_timestamp: str,
+            offset_in_seconds: int,
+        ) -> None:
+        self.start_timestamp = start_timestamp
+        self.end_timestamp = end_timestamp
+        self.offset_in_seconds = offset_in_seconds
+    
+    def __str__(self) -> str:
+        return f"SecondWiseBucketer(start_timestamp='{self.start_timestamp}', end_timestamp='{self.end_timestamp}', offset_in_seconds={self.offset_in_seconds}"
+    
+    def get_buckets(
+            self,
+            include_start_timestamp: Optional[bool] = True,
+            include_end_timestamp: Optional[bool] = True,
+            as_string: Optional[bool] = True,
+        ) -> Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
+        """
+        Returns list of tuples of (start_timestamp, end_timestamp) buckets. They will always be in ascending order.
+        """
+        timestamps_by_offset = offset_between_datetimes(
+            start_timestamp=self.start_timestamp,
+            end_timestamp=self.end_timestamp,
+            offset_in_seconds=self.offset_in_seconds,
+            include_start_timestamp=include_start_timestamp,
+            include_end_timestamp=include_end_timestamp,
+        )
+        if as_string:
+            timestamps_by_offset = list(map(lambda timestamp: to_datetime_string(dt_obj=timestamp), timestamps_by_offset))
+        buckets = [
+            (timestamps_by_offset[idx], timestamps_by_offset[idx + 1]) for idx in range(len(timestamps_by_offset) - 1)
+        ]
+        return buckets
