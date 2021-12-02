@@ -429,7 +429,7 @@ class SecondWiseBucketer:
         self.offset_in_seconds = offset_in_seconds
     
     def __str__(self) -> str:
-        return f"SecondWiseBucketer(start_timestamp='{self.start_timestamp}', end_timestamp='{self.end_timestamp}', offset_in_seconds={self.offset_in_seconds}"
+        return f"SecondWiseBucketer(start_timestamp='{self.start_timestamp}', end_timestamp='{self.end_timestamp}', offset_in_seconds={self.offset_in_seconds})"
     
     def get_buckets(self, as_type: Optional[str] = 'string') -> Union[List[Tuple[datetime, datetime]], List[Tuple[str, str]]]:
         """
