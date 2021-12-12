@@ -20,6 +20,28 @@ DATETIME_STRING_FORMAT = "%Y-%m-%d %H:%M:%S" # Eg: "2020-03-19 17:45:08"
 TIMESTAMP_INTEGER_FORMAT = "%Y%m%d%H%M%S" # Will be converted to an integer after parsing
 
 
+class TimeUnitConverter:
+    """Class for time related unit conversions"""
+    SECONDS_PER_MINUTE = 60
+    SECONDS_PER_HOUR = SECONDS_PER_MINUTE * 60
+    SECONDS_PER_DAY = SECONDS_PER_HOUR * 24
+    SECONDS_PER_WEEK = SECONDS_PER_DAY * 7
+    SECONDS_PER_NON_LEAP_YEAR = SECONDS_PER_DAY * 365
+    SECONDS_PER_LEAP_YEAR = SECONDS_PER_DAY * 366
+
+    MINUTES_PER_HOUR = 60
+    MINUTES_PER_DAY = MINUTES_PER_HOUR * 24
+    MINUTES_PER_WEEK = MINUTES_PER_DAY * 7
+    MINUTES_PER_NON_LEAP_YEAR = MINUTES_PER_DAY * 365
+    MINUTES_PER_LEAP_YEAR = MINUTES_PER_DAY * 366
+
+    HOURS_PER_DAY = 24
+    HOURS_PER_WEEK = HOURS_PER_DAY * 7
+    HOURS_PER_NON_LEAP_YEAR = HOURS_PER_DAY * 365
+    HOURS_PER_LEAP_YEAR = HOURS_PER_DAY * 366
+
+
+
 def get_current_timestamp_as_integer() -> int:
     """Returns current timestamp as an integer (Format: yyyymmddhhmmss)"""
     dt_obj = datetime.now()
