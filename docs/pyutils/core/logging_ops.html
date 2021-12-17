@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>pyutils.core API documentation</title>
+<title>pyutils.core.logging_ops API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -19,74 +19,115 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>pyutils.core</code></h1>
+<h1 class="title">Module <code>pyutils.core.logging_ops</code></h1>
 </header>
 <section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import logging
+
+
+def get_logger_object(
+        logger_name: str,
+        filepath: str,
+    ) -&gt; logging.Logger:
+    &#34;&#34;&#34;
+    Gets `logging.Logger` object based on the given params. Each set of params must be unique together.
+    Can be used to write neat-looking log messages for all possible log levels.
+
+    &gt;&gt;&gt; logger_ceo = get_logger_object(logger_name=&#34;ceo&#34;, filepath=&#34;ceo.log&#34;)
+    &gt;&gt;&gt; logger_emp = get_logger_object(logger_name=&#34;employee&#34;, filepath=&#34;employee.log&#34;)
+    &gt;&gt;&gt; logger_ceo.info(msg=&#34;This is a log in the CEO module&#34;)
+    &gt;&gt;&gt; logger_emp.info(msg=&#34;This is a log in the Employee module&#34;)
+    
+    ### References
+        - https://docs.python.org/3/library/logging.html
+        - https://docs.python.org/3/library/logging.html#logrecord-attributes
+        - https://docs.python.org/3/howto/logging-cookbook.html
+        - https://www.youtube.com/watch?v=jxmzY9soFXg
+    &#34;&#34;&#34;
+    logger_obj = logging.getLogger(name=logger_name)
+    logger_obj.setLevel(level=logging.DEBUG)
+    file_handler = logging.FileHandler(
+        filename=filepath,
+        mode=&#39;a&#39;,
+    )
+    file_handler.setFormatter(
+        fmt=logging.Formatter(
+            fmt=&#34;\nDatetime: %(asctime)s | Level: %(levelname)s | Logger: %(name)s | File: %(filename)s | Function/method: %(funcName)s | Message: %(message)s&#34;,
+            datefmt=&#34;%Y-%m-%d %H:%M:%S&#34;,
+        )
+    )
+    logger_obj.addHandler(hdlr=file_handler)
+    return logger_obj</code></pre>
+</details>
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt><code class="name"><a title="pyutils.core.date_ops" href="date_ops.html">pyutils.core.date_ops</a></code></dt>
+<dt id="pyutils.core.logging_ops.get_logger_object"><code class="name flex">
+<span>def <span class="ident">get_logger_object</span></span>(<span>logger_name: str, filepath: str) ‑> logging.Logger</span>
+</code></dt>
 <dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.decorators" href="decorators.html">pyutils.core.decorators</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.email_ops" href="email_ops.html">pyutils.core.email_ops</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.excel_ops" href="excel_ops.html">pyutils.core.excel_ops</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.exceptions" href="exceptions.html">pyutils.core.exceptions</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.file_io" href="file_io.html">pyutils.core.file_io</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.logging_ops" href="logging_ops.html">pyutils.core.logging_ops</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.mathematics" href="mathematics.html">pyutils.core.mathematics</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.query_ops" href="query_ops.html">pyutils.core.query_ops</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.random_data_generator" href="random_data_generator.html">pyutils.core.random_data_generator</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.string_ops" href="string_ops.html">pyutils.core.string_ops</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.text_casing" href="text_casing.html">pyutils.core.text_casing</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.type_annotations" href="type_annotations.html">pyutils.core.type_annotations</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="pyutils.core.utils" href="utils.html">pyutils.core.utils</a></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Gets <code>logging.Logger</code> object based on the given params. Each set of params must be unique together.
+Can be used to write neat-looking log messages for all possible log levels.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; logger_ceo = get_logger_object(logger_name=&quot;ceo&quot;, filepath=&quot;ceo.log&quot;)
+&gt;&gt;&gt; logger_emp = get_logger_object(logger_name=&quot;employee&quot;, filepath=&quot;employee.log&quot;)
+&gt;&gt;&gt; logger_ceo.info(msg=&quot;This is a log in the CEO module&quot;)
+&gt;&gt;&gt; logger_emp.info(msg=&quot;This is a log in the Employee module&quot;)
+</code></pre>
+<h3 id="references">References</h3>
+<pre><code>- &lt;https://docs.python.org/3/library/logging.html&gt;
+- &lt;https://docs.python.org/3/library/logging.html#logrecord-attributes&gt;
+- &lt;https://docs.python.org/3/howto/logging-cookbook.html&gt;
+- &lt;https://www.youtube.com/watch?v=jxmzY9soFXg&gt;
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_logger_object(
+        logger_name: str,
+        filepath: str,
+    ) -&gt; logging.Logger:
+    &#34;&#34;&#34;
+    Gets `logging.Logger` object based on the given params. Each set of params must be unique together.
+    Can be used to write neat-looking log messages for all possible log levels.
+
+    &gt;&gt;&gt; logger_ceo = get_logger_object(logger_name=&#34;ceo&#34;, filepath=&#34;ceo.log&#34;)
+    &gt;&gt;&gt; logger_emp = get_logger_object(logger_name=&#34;employee&#34;, filepath=&#34;employee.log&#34;)
+    &gt;&gt;&gt; logger_ceo.info(msg=&#34;This is a log in the CEO module&#34;)
+    &gt;&gt;&gt; logger_emp.info(msg=&#34;This is a log in the Employee module&#34;)
+    
+    ### References
+        - https://docs.python.org/3/library/logging.html
+        - https://docs.python.org/3/library/logging.html#logrecord-attributes
+        - https://docs.python.org/3/howto/logging-cookbook.html
+        - https://www.youtube.com/watch?v=jxmzY9soFXg
+    &#34;&#34;&#34;
+    logger_obj = logging.getLogger(name=logger_name)
+    logger_obj.setLevel(level=logging.DEBUG)
+    file_handler = logging.FileHandler(
+        filename=filepath,
+        mode=&#39;a&#39;,
+    )
+    file_handler.setFormatter(
+        fmt=logging.Formatter(
+            fmt=&#34;\nDatetime: %(asctime)s | Level: %(levelname)s | Logger: %(name)s | File: %(filename)s | Function/method: %(funcName)s | Message: %(message)s&#34;,
+            datefmt=&#34;%Y-%m-%d %H:%M:%S&#34;,
+        )
+    )
+    logger_obj.addHandler(hdlr=file_handler)
+    return logger_obj</code></pre>
+</details>
 </dd>
 </dl>
-</section>
-<section>
-</section>
-<section>
 </section>
 <section>
 </section>
@@ -99,25 +140,12 @@
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="pyutils" href="../index.html">pyutils</a></code></li>
+<li><code><a title="pyutils.core" href="index.html">pyutils.core</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="pyutils.core.date_ops" href="date_ops.html">pyutils.core.date_ops</a></code></li>
-<li><code><a title="pyutils.core.decorators" href="decorators.html">pyutils.core.decorators</a></code></li>
-<li><code><a title="pyutils.core.email_ops" href="email_ops.html">pyutils.core.email_ops</a></code></li>
-<li><code><a title="pyutils.core.excel_ops" href="excel_ops.html">pyutils.core.excel_ops</a></code></li>
-<li><code><a title="pyutils.core.exceptions" href="exceptions.html">pyutils.core.exceptions</a></code></li>
-<li><code><a title="pyutils.core.file_io" href="file_io.html">pyutils.core.file_io</a></code></li>
-<li><code><a title="pyutils.core.logging_ops" href="logging_ops.html">pyutils.core.logging_ops</a></code></li>
-<li><code><a title="pyutils.core.mathematics" href="mathematics.html">pyutils.core.mathematics</a></code></li>
-<li><code><a title="pyutils.core.query_ops" href="query_ops.html">pyutils.core.query_ops</a></code></li>
-<li><code><a title="pyutils.core.random_data_generator" href="random_data_generator.html">pyutils.core.random_data_generator</a></code></li>
-<li><code><a title="pyutils.core.string_ops" href="string_ops.html">pyutils.core.string_ops</a></code></li>
-<li><code><a title="pyutils.core.text_casing" href="text_casing.html">pyutils.core.text_casing</a></code></li>
-<li><code><a title="pyutils.core.type_annotations" href="type_annotations.html">pyutils.core.type_annotations</a></code></li>
-<li><code><a title="pyutils.core.utils" href="utils.html">pyutils.core.utils</a></code></li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="pyutils.core.logging_ops.get_logger_object" href="#pyutils.core.logging_ops.get_logger_object">get_logger_object</a></code></li>
 </ul>
 </li>
 </ul>
