@@ -21,7 +21,7 @@ def is_none_or_nan(value: Any) -> bool:
 
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
     """Returns dictionary having the following keys: ['h', 'm', 's'], denoting the time elapsed based on `num_seconds` given"""
-    hrs, mins, secs = 0, 0, 0
+    days, hrs, mins, secs = 0, 0, 0, 0
     decimal_after_secs = None
     if int(num_seconds) == num_seconds:
         num_seconds = int(num_seconds)
@@ -32,10 +32,15 @@ def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
         secs = num_seconds
     elif 60 <= num_seconds < 3600:
         mins, secs = divmod(num_seconds, 60)
-    else:
+    elif 3600 <= num_seconds < 3600 * 24:
         hrs, secs_remainder = divmod(num_seconds, 3600)
         mins, secs = divmod(secs_remainder, 60)
+    else:
+        days, secs_remainder = divmod(num_seconds, 3600 * 24)
+        hrs, secs_remainder = divmod(secs_remainder, 3600)
+        mins, secs = divmod(secs_remainder, 60)
     dictionary_timetaken = {
+        "d": days,
         "h": hrs,
         "m": mins,
         "s": round(secs + decimal_after_secs, 2) if decimal_after_secs else secs,
