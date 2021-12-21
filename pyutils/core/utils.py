@@ -20,7 +20,7 @@ def is_none_or_nan(value: Any) -> bool:
 
 
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
-    """Returns dictionary having the following keys: ['hrs', 'mins', 'secs'], denoting the time elapsed based on `num_seconds` given"""
+    """Returns dictionary having the following keys: ['h', 'm', 's'], denoting the time elapsed based on `num_seconds` given"""
     hrs, mins, secs = 0, 0, 0
     decimal_after_secs = None
     if int(num_seconds) == num_seconds:
@@ -36,9 +36,9 @@ def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
         hrs, secs_remainder = divmod(num_seconds, 3600)
         mins, secs = divmod(secs_remainder, 60)
     dictionary_timetaken = {
-        "hrs": hrs,
-        "mins": mins,
-        "secs": secs + decimal_after_secs if decimal_after_secs else secs,
+        "h": hrs,
+        "m": mins,
+        "s": round(secs + decimal_after_secs, 2) if decimal_after_secs else secs,
     }
     dictionary_timetaken = {key: value for key, value in dictionary_timetaken.items() if value > 0}
     return dictionary_timetaken
@@ -47,7 +47,7 @@ def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
 def get_timetaken_fstring(num_seconds: Number) -> str:
     """Returns string denoting the time elapsed based on `num_seconds` given"""
     dict_timetaken = get_timetaken_dictionary(num_seconds=num_seconds)
-    timetaken_components = [f"{value} {unit}" for unit, value in dict_timetaken.items()]
+    timetaken_components = [f"{value}{unit}" for unit, value in dict_timetaken.items()]
     return " ".join(timetaken_components).strip()
 
 
