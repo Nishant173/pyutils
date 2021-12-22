@@ -20,40 +20,41 @@ def is_none_or_nan(value: Any) -> bool:
 
 
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
-    """Returns dictionary having the following keys: ['h', 'm', 's'], denoting the time elapsed based on `num_seconds` given"""
-    days, hrs, mins, secs = 0, 0, 0, 0
-    decimal_after_secs = None
-    if int(num_seconds) == num_seconds:
-        num_seconds = int(num_seconds)
-    else:
-        decimal_after_secs = num_seconds - np.floor(num_seconds)
-        num_seconds = int(np.floor(num_seconds))
-    if num_seconds < 60:
-        secs = num_seconds
-    elif 60 <= num_seconds < 3600:
-        mins, secs = divmod(num_seconds, 60)
-    elif 3600 <= num_seconds < 3600 * 24:
-        hrs, secs_remainder = divmod(num_seconds, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    else:
-        days, secs_remainder = divmod(num_seconds, 3600 * 24)
-        hrs, secs_remainder = divmod(secs_remainder, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    dictionary_timetaken = {
-        "d": days,
-        "h": hrs,
-        "m": mins,
-        "s": round(secs + decimal_after_secs, 2) if decimal_after_secs else secs,
+    """
+    Returns dictionary having the keys: ['weeks', 'days', 'hours', 'minutes', 'seconds'] containing the time elapsed.
+    
+    >>> get_timetaken_dictionary(num_seconds=3725.4292)
+    >>> get_timetaken_dictionary(num_seconds=885354.128129)
+    """
+    weeks, remainder = divmod(num_seconds, 60*60*24*7)
+    days, remainder = divmod(remainder, 60*60*24)
+    hours, remainder = divmod(remainder, 60*60)
+    minutes, seconds = divmod(remainder, 60)
+    seconds = round(seconds, 2)
+    
+    dictionary_time_taken = {
+        'weeks': integerify_if_possible(weeks),
+        'days': integerify_if_possible(days),
+        'hours': integerify_if_possible(hours),
+        'minutes': integerify_if_possible(minutes),
+        'seconds': integerify_if_possible(seconds),
     }
-    dictionary_timetaken = {key: value for key, value in dictionary_timetaken.items() if value > 0}
-    return dictionary_timetaken
+    return dictionary_time_taken
 
 
 def get_timetaken_fstring(num_seconds: Number) -> str:
-    """Returns string denoting the time elapsed based on `num_seconds` given"""
-    dict_timetaken = get_timetaken_dictionary(num_seconds=num_seconds)
-    timetaken_components = [f"{value}{unit}" for unit, value in dict_timetaken.items()]
-    return " ".join(timetaken_components).strip()
+    """Returns f-string containing the elapsed time"""
+    dict_time_taken = get_timetaken_dictionary(num_seconds=num_seconds)
+    dict_unit_shortener = {
+        'weeks': 'w',
+        'days': 'd',
+        'hours': 'h',
+        'minutes': 'm',
+        'seconds': 's',
+    }
+    time_taken_fstring = " ".join([f"{value}{dict_unit_shortener.get(unit, unit)}" for unit, value in dict_time_taken.items() if value != 0]).strip()
+    time_taken_fstring = '0s' if time_taken_fstring == "" else time_taken_fstring
+    return time_taken_fstring
 
 
 def get_random_choice_except(
