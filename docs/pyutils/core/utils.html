@@ -48,40 +48,41 @@ def is_none_or_nan(value: Any) -&gt; bool:
 
 
 def get_timetaken_dictionary(num_seconds: Number) -&gt; Dict[str, Number]:
-    &#34;&#34;&#34;Returns dictionary having the following keys: [&#39;h&#39;, &#39;m&#39;, &#39;s&#39;], denoting the time elapsed based on `num_seconds` given&#34;&#34;&#34;
-    days, hrs, mins, secs = 0, 0, 0, 0
-    decimal_after_secs = None
-    if int(num_seconds) == num_seconds:
-        num_seconds = int(num_seconds)
-    else:
-        decimal_after_secs = num_seconds - np.floor(num_seconds)
-        num_seconds = int(np.floor(num_seconds))
-    if num_seconds &lt; 60:
-        secs = num_seconds
-    elif 60 &lt;= num_seconds &lt; 3600:
-        mins, secs = divmod(num_seconds, 60)
-    elif 3600 &lt;= num_seconds &lt; 3600 * 24:
-        hrs, secs_remainder = divmod(num_seconds, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    else:
-        days, secs_remainder = divmod(num_seconds, 3600 * 24)
-        hrs, secs_remainder = divmod(secs_remainder, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    dictionary_timetaken = {
-        &#34;d&#34;: days,
-        &#34;h&#34;: hrs,
-        &#34;m&#34;: mins,
-        &#34;s&#34;: round(secs + decimal_after_secs, 2) if decimal_after_secs else secs,
+    &#34;&#34;&#34;
+    Returns dictionary having the keys: [&#39;weeks&#39;, &#39;days&#39;, &#39;hours&#39;, &#39;minutes&#39;, &#39;seconds&#39;] containing the time elapsed.
+    
+    &gt;&gt;&gt; get_timetaken_dictionary(num_seconds=3725.4292)
+    &gt;&gt;&gt; get_timetaken_dictionary(num_seconds=885354.128129)
+    &#34;&#34;&#34;
+    weeks, remainder = divmod(num_seconds, 60*60*24*7)
+    days, remainder = divmod(remainder, 60*60*24)
+    hours, remainder = divmod(remainder, 60*60)
+    minutes, seconds = divmod(remainder, 60)
+    seconds = round(seconds, 2)
+    
+    dictionary_time_taken = {
+        &#39;weeks&#39;: integerify_if_possible(weeks),
+        &#39;days&#39;: integerify_if_possible(days),
+        &#39;hours&#39;: integerify_if_possible(hours),
+        &#39;minutes&#39;: integerify_if_possible(minutes),
+        &#39;seconds&#39;: integerify_if_possible(seconds),
     }
-    dictionary_timetaken = {key: value for key, value in dictionary_timetaken.items() if value &gt; 0}
-    return dictionary_timetaken
+    return dictionary_time_taken
 
 
 def get_timetaken_fstring(num_seconds: Number) -&gt; str:
-    &#34;&#34;&#34;Returns string denoting the time elapsed based on `num_seconds` given&#34;&#34;&#34;
-    dict_timetaken = get_timetaken_dictionary(num_seconds=num_seconds)
-    timetaken_components = [f&#34;{value}{unit}&#34; for unit, value in dict_timetaken.items()]
-    return &#34; &#34;.join(timetaken_components).strip()
+    &#34;&#34;&#34;Returns f-string containing the elapsed time&#34;&#34;&#34;
+    dict_time_taken = get_timetaken_dictionary(num_seconds=num_seconds)
+    dict_unit_shortener = {
+        &#39;weeks&#39;: &#39;w&#39;,
+        &#39;days&#39;: &#39;d&#39;,
+        &#39;hours&#39;: &#39;h&#39;,
+        &#39;minutes&#39;: &#39;m&#39;,
+        &#39;seconds&#39;: &#39;s&#39;,
+    }
+    time_taken_fstring = &#34; &#34;.join([f&#34;{value}{dict_unit_shortener.get(unit, unit)}&#34; for unit, value in dict_time_taken.items() if value != 0]).strip()
+    time_taken_fstring = &#39;0s&#39; if time_taken_fstring == &#34;&#34; else time_taken_fstring
+    return time_taken_fstring
 
 
 def get_random_choice_except(
@@ -314,55 +315,59 @@ def get_indices_for_partitioning(
 <span>def <span class="ident">get_timetaken_dictionary</span></span>(<span>num_seconds: Union[int, float]) ‑> Dict[str, Union[int, float]]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns dictionary having the following keys: ['h', 'm', 's'], denoting the time elapsed based on <code>num_seconds</code> given</p></div>
+<div class="desc"><p>Returns dictionary having the keys: ['weeks', 'days', 'hours', 'minutes', 'seconds'] containing the time elapsed.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; get_timetaken_dictionary(num_seconds=3725.4292)
+&gt;&gt;&gt; get_timetaken_dictionary(num_seconds=885354.128129)
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_timetaken_dictionary(num_seconds: Number) -&gt; Dict[str, Number]:
-    &#34;&#34;&#34;Returns dictionary having the following keys: [&#39;h&#39;, &#39;m&#39;, &#39;s&#39;], denoting the time elapsed based on `num_seconds` given&#34;&#34;&#34;
-    days, hrs, mins, secs = 0, 0, 0, 0
-    decimal_after_secs = None
-    if int(num_seconds) == num_seconds:
-        num_seconds = int(num_seconds)
-    else:
-        decimal_after_secs = num_seconds - np.floor(num_seconds)
-        num_seconds = int(np.floor(num_seconds))
-    if num_seconds &lt; 60:
-        secs = num_seconds
-    elif 60 &lt;= num_seconds &lt; 3600:
-        mins, secs = divmod(num_seconds, 60)
-    elif 3600 &lt;= num_seconds &lt; 3600 * 24:
-        hrs, secs_remainder = divmod(num_seconds, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    else:
-        days, secs_remainder = divmod(num_seconds, 3600 * 24)
-        hrs, secs_remainder = divmod(secs_remainder, 3600)
-        mins, secs = divmod(secs_remainder, 60)
-    dictionary_timetaken = {
-        &#34;d&#34;: days,
-        &#34;h&#34;: hrs,
-        &#34;m&#34;: mins,
-        &#34;s&#34;: round(secs + decimal_after_secs, 2) if decimal_after_secs else secs,
+    &#34;&#34;&#34;
+    Returns dictionary having the keys: [&#39;weeks&#39;, &#39;days&#39;, &#39;hours&#39;, &#39;minutes&#39;, &#39;seconds&#39;] containing the time elapsed.
+    
+    &gt;&gt;&gt; get_timetaken_dictionary(num_seconds=3725.4292)
+    &gt;&gt;&gt; get_timetaken_dictionary(num_seconds=885354.128129)
+    &#34;&#34;&#34;
+    weeks, remainder = divmod(num_seconds, 60*60*24*7)
+    days, remainder = divmod(remainder, 60*60*24)
+    hours, remainder = divmod(remainder, 60*60)
+    minutes, seconds = divmod(remainder, 60)
+    seconds = round(seconds, 2)
+    
+    dictionary_time_taken = {
+        &#39;weeks&#39;: integerify_if_possible(weeks),
+        &#39;days&#39;: integerify_if_possible(days),
+        &#39;hours&#39;: integerify_if_possible(hours),
+        &#39;minutes&#39;: integerify_if_possible(minutes),
+        &#39;seconds&#39;: integerify_if_possible(seconds),
     }
-    dictionary_timetaken = {key: value for key, value in dictionary_timetaken.items() if value &gt; 0}
-    return dictionary_timetaken</code></pre>
+    return dictionary_time_taken</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.get_timetaken_fstring"><code class="name flex">
 <span>def <span class="ident">get_timetaken_fstring</span></span>(<span>num_seconds: Union[int, float]) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns string denoting the time elapsed based on <code>num_seconds</code> given</p></div>
+<div class="desc"><p>Returns f-string containing the elapsed time</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_timetaken_fstring(num_seconds: Number) -&gt; str:
-    &#34;&#34;&#34;Returns string denoting the time elapsed based on `num_seconds` given&#34;&#34;&#34;
-    dict_timetaken = get_timetaken_dictionary(num_seconds=num_seconds)
-    timetaken_components = [f&#34;{value}{unit}&#34; for unit, value in dict_timetaken.items()]
-    return &#34; &#34;.join(timetaken_components).strip()</code></pre>
+    &#34;&#34;&#34;Returns f-string containing the elapsed time&#34;&#34;&#34;
+    dict_time_taken = get_timetaken_dictionary(num_seconds=num_seconds)
+    dict_unit_shortener = {
+        &#39;weeks&#39;: &#39;w&#39;,
+        &#39;days&#39;: &#39;d&#39;,
+        &#39;hours&#39;: &#39;h&#39;,
+        &#39;minutes&#39;: &#39;m&#39;,
+        &#39;seconds&#39;: &#39;s&#39;,
+    }
+    time_taken_fstring = &#34; &#34;.join([f&#34;{value}{dict_unit_shortener.get(unit, unit)}&#34; for unit, value in dict_time_taken.items() if value != 0]).strip()
+    time_taken_fstring = &#39;0s&#39; if time_taken_fstring == &#34;&#34; else time_taken_fstring
+    return time_taken_fstring</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.has_negative_number"><code class="name flex">
