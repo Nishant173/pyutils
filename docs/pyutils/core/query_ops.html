@@ -34,14 +34,17 @@ from pyutils.core.string_ops import remove_last_n_characters
 from pyutils.core.utils import is_none_or_nan
 
 
-def wrap_string_with_appropriate_quotes(text: str):
-    &#34;&#34;&#34;
-    If given string contains single quotes, then wraps it with double quotes.
-    Otherwise, wraps it with single quotes.
-    &#34;&#34;&#34;
-    if &#34;&#39;&#34; in text:
+def wrap_string_with_appropriate_quotes(text: str) -&gt; str:
+    &#34;&#34;&#34;Wraps given string with appropriate quotes (for SQL insert query)&#34;&#34;&#34;
+    has_single_quote = &#34;&#39;&#34; in text
+    has_double_quote = &#39;&#34;&#39; in text
+    if not has_single_quote and not has_double_quote:
+        return f&#34;&#39;{text}&#39;&#34;
+    if has_single_quote and not has_double_quote:
         return f&#39;&#34;{text}&#34;&#39;
-    return f&#34;&#39;{text}&#39;&#34;
+    if not has_single_quote and has_double_quote:
+        return f&#34;&#39;{text}&#39;&#34;
+    return f&#39;&#34;{text}&#34;&#39;
 
 
 def get_in_query_for_numbers(numbers: List[Union[int, float]]) -&gt; str:
@@ -145,12 +148,15 @@ def generate_insert_query(
         )
     &#34;&#34;&#34;
     records = data.to_dict(orient=&#39;records&#39;)
-    columns = data.columns.tolist()
-    datatypes = list(map(lambda column: column_to_datatype_mapper[column], columns))
-    comma_separated_columns = &#39;, &#39;.join(map(str, columns))
-    query = f&#34;INSERT INTO `{table_name}` ({comma_separated_columns})&#34;
-    query += &#34;\nVALUES\n&#34;
-    query += __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
+    columns = list(column_to_datatype_mapper.keys())
+    datatypes = list(column_to_datatype_mapper.values())
+    comma_separated_column_names = &#39;, &#39;.join(map(str, columns))
+    query_string_of_records = __get_query_string_of_records(
+        records=records,
+        columns=columns,
+        datatypes=datatypes,
+    )
+    query = f&#34;&#34;&#34;INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}&#34;&#34;&#34;
     return query</code></pre>
 </details>
 </section>
@@ -228,12 +234,15 @@ where the records will be inserted.</p>
         )
     &#34;&#34;&#34;
     records = data.to_dict(orient=&#39;records&#39;)
-    columns = data.columns.tolist()
-    datatypes = list(map(lambda column: column_to_datatype_mapper[column], columns))
-    comma_separated_columns = &#39;, &#39;.join(map(str, columns))
-    query = f&#34;INSERT INTO `{table_name}` ({comma_separated_columns})&#34;
-    query += &#34;\nVALUES\n&#34;
-    query += __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
+    columns = list(column_to_datatype_mapper.keys())
+    datatypes = list(column_to_datatype_mapper.values())
+    comma_separated_column_names = &#39;, &#39;.join(map(str, columns))
+    query_string_of_records = __get_query_string_of_records(
+        records=records,
+        columns=columns,
+        datatypes=datatypes,
+    )
+    query = f&#34;&#34;&#34;INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}&#34;&#34;&#34;
     return query</code></pre>
 </details>
 </dd>
@@ -266,23 +275,25 @@ where the records will be inserted.</p>
 </details>
 </dd>
 <dt id="pyutils.core.query_ops.wrap_string_with_appropriate_quotes"><code class="name flex">
-<span>def <span class="ident">wrap_string_with_appropriate_quotes</span></span>(<span>text: str)</span>
+<span>def <span class="ident">wrap_string_with_appropriate_quotes</span></span>(<span>text: str) ‑> str</span>
 </code></dt>
 <dd>
-<div class="desc"><p>If given string contains single quotes, then wraps it with double quotes.
-Otherwise, wraps it with single quotes.</p></div>
+<div class="desc"><p>Wraps given string with appropriate quotes (for SQL insert query)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def wrap_string_with_appropriate_quotes(text: str):
-    &#34;&#34;&#34;
-    If given string contains single quotes, then wraps it with double quotes.
-    Otherwise, wraps it with single quotes.
-    &#34;&#34;&#34;
-    if &#34;&#39;&#34; in text:
+<pre><code class="python">def wrap_string_with_appropriate_quotes(text: str) -&gt; str:
+    &#34;&#34;&#34;Wraps given string with appropriate quotes (for SQL insert query)&#34;&#34;&#34;
+    has_single_quote = &#34;&#39;&#34; in text
+    has_double_quote = &#39;&#34;&#39; in text
+    if not has_single_quote and not has_double_quote:
+        return f&#34;&#39;{text}&#39;&#34;
+    if has_single_quote and not has_double_quote:
         return f&#39;&#34;{text}&#34;&#39;
-    return f&#34;&#39;{text}&#39;&#34;</code></pre>
+    if not has_single_quote and has_double_quote:
+        return f&#34;&#39;{text}&#39;&#34;
+    return f&#39;&#34;{text}&#34;&#39;</code></pre>
 </details>
 </dd>
 </dl>
