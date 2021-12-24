@@ -6,6 +6,19 @@ from pyutils.core.string_ops import remove_last_n_characters
 from pyutils.core.utils import is_none_or_nan
 
 
+def wrap_string_with_appropriate_quotes(text: str) -> str:
+    """Wraps given string with appropriate quotes (for SQL insert query)"""
+    has_single_quote = "'" in text
+    has_double_quote = '"' in text
+    if not has_single_quote and not has_double_quote:
+        return f"'{text}'"
+    if has_single_quote and not has_double_quote:
+        return f'"{text}"'
+    if not has_single_quote and has_double_quote:
+        return f"'{text}'"
+    return f'"{text}"'
+
+
 def get_in_query_for_numbers(numbers: List[Union[int, float]]) -> str:
     comma_separated_numbers = ", ".join(map(str, numbers))
     return f"({comma_separated_numbers})"
