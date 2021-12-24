@@ -117,10 +117,13 @@ def generate_insert_query(
         )
     """
     records = data.to_dict(orient='records')
-    columns = data.columns.tolist()
-    datatypes = list(map(lambda column: column_to_datatype_mapper[column], columns))
-    comma_separated_columns = ', '.join(map(str, columns))
-    query = f"INSERT INTO `{table_name}` ({comma_separated_columns})"
-    query += "\nVALUES\n"
-    query += __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
+    columns = list(column_to_datatype_mapper.keys())
+    datatypes = list(column_to_datatype_mapper.values())
+    comma_separated_column_names = ', '.join(map(str, columns))
+    query_string_of_records = __get_query_string_of_records(
+        records=records,
+        columns=columns,
+        datatypes=datatypes,
+    )
+    query = f"""INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}"""
     return query
