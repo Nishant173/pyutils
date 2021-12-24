@@ -6,7 +6,7 @@ from pyutils.core.string_ops import remove_last_n_characters
 from pyutils.core.utils import is_none_or_nan
 
 
-def wrap_string_with_appropriate_quotes(text: str):
+def wrap_string_with_appropriate_quotes(text: str) -> str:
     """
     If given string contains single quotes, then wraps it with double quotes.
     Otherwise, wraps it with single quotes.
