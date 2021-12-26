@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 import random
 
 import numpy as np
@@ -169,3 +169,33 @@ def get_indices_for_partitioning(
     for _ in range(num_pending_partitions):
         indices_for_partitioning.append(indices_for_partitioning[-1] + min_length_per_partition)
     return indices_for_partitioning
+
+
+def get_partition_lengths(
+        length_of_iterable: int,
+        num_partitions: int,
+    ) -> List[int]:
+    """Returns lengths of partitions of an iterable. The lengths will be uniformly distributed"""
+    if num_partitions == 0:
+        raise ValueError("Number of partitions cannot be 0")
+    if num_partitions > length_of_iterable:
+        raise ValueError("Number of partitions cannot be > length of iterable")
+    min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
+    partition_lengths = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    return partition_lengths
+
+
+def get_partition_index_ranges(
+        length_of_iterable: int,
+        num_partitions: int,
+    ) -> List[Tuple[int, int]]:
+    """
+    Returns list of tuples having (start_index, end_index) that partition an iterable.
+    The indices are zero-based. The partitions will be uniformly distributed.
+
+    >>> get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
+    """
+    partition_lengths = get_partition_lengths(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
+    partition_start_indices = [0] + list(np.cumsum(partition_lengths))
+    partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
+    return partition_index_ranges
