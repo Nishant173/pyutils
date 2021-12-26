@@ -125,14 +125,8 @@ def generate_insert_query(
     datatypes = list(column_to_datatype_mapper.values())
     columns_missing = get_column_availability_info(data=data, expected_columns=columns)['columns_missing']
     if columns_missing:
-        raise KeyError(
-            f"The following columns from `column_to_datatype_mapper` are missing in the given DataFrame: {columns_missing}"
-        )
+        raise KeyError(f"The following columns from `column_to_datatype_mapper` are missing in the given DataFrame: {columns_missing}")
     comma_separated_column_names = ', '.join(map(str, columns))
-    query_string_of_records = __get_query_string_of_records(
-        records=records,
-        columns=columns,
-        datatypes=datatypes,
-    )
+    query_string_of_records = __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
     query = f"""INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}"""
     return query
