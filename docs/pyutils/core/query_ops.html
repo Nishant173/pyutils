@@ -32,6 +32,7 @@ import pandas as pd
 
 from pyutils.core.string_ops import remove_last_n_characters
 from pyutils.core.utils import is_none_or_nan
+from pyutils.data_wrangler.explore import get_column_availability_info
 
 
 def wrap_string_with_appropriate_quotes(text: str) -&gt; str:
@@ -150,12 +151,19 @@ def generate_insert_query(
     records = data.to_dict(orient=&#39;records&#39;)
     columns = list(column_to_datatype_mapper.keys())
     datatypes = list(column_to_datatype_mapper.values())
+
+    # Data validation
+    columns_missing = get_column_availability_info(data=data, expected_columns=columns)[&#39;columns_missing&#39;]
+    if columns_missing:
+        raise KeyError(f&#34;The following columns from `column_to_datatype_mapper` are missing in the given DataFrame: {columns_missing}&#34;)
+    valid_datatype_options = [&#39;integer&#39;, &#39;float&#39;, &#39;string&#39;, &#39;date&#39;, &#39;timestamp&#39;, &#39;boolean&#39;]
+    invalid_datatypes = list(set(datatypes).difference(set(valid_datatype_options)))
+    if invalid_datatypes:
+        raise ValueError(f&#34;The following datatypes from `column_to_datatype_mapper` are invalid: {invalid_datatypes}. Valid datatype options are: {valid_datatype_options}&#34;)
+    
+    # Actual logic
     comma_separated_column_names = &#39;, &#39;.join(map(str, columns))
-    query_string_of_records = __get_query_string_of_records(
-        records=records,
-        columns=columns,
-        datatypes=datatypes,
-    )
+    query_string_of_records = __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
     query = f&#34;&#34;&#34;INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}&#34;&#34;&#34;
     return query</code></pre>
 </details>
@@ -236,12 +244,19 @@ where the records will be inserted.</p>
     records = data.to_dict(orient=&#39;records&#39;)
     columns = list(column_to_datatype_mapper.keys())
     datatypes = list(column_to_datatype_mapper.values())
+
+    # Data validation
+    columns_missing = get_column_availability_info(data=data, expected_columns=columns)[&#39;columns_missing&#39;]
+    if columns_missing:
+        raise KeyError(f&#34;The following columns from `column_to_datatype_mapper` are missing in the given DataFrame: {columns_missing}&#34;)
+    valid_datatype_options = [&#39;integer&#39;, &#39;float&#39;, &#39;string&#39;, &#39;date&#39;, &#39;timestamp&#39;, &#39;boolean&#39;]
+    invalid_datatypes = list(set(datatypes).difference(set(valid_datatype_options)))
+    if invalid_datatypes:
+        raise ValueError(f&#34;The following datatypes from `column_to_datatype_mapper` are invalid: {invalid_datatypes}. Valid datatype options are: {valid_datatype_options}&#34;)
+    
+    # Actual logic
     comma_separated_column_names = &#39;, &#39;.join(map(str, columns))
-    query_string_of_records = __get_query_string_of_records(
-        records=records,
-        columns=columns,
-        datatypes=datatypes,
-    )
+    query_string_of_records = __get_query_string_of_records(records=records, columns=columns, datatypes=datatypes)
     query = f&#34;&#34;&#34;INSERT INTO {table_name} ({comma_separated_column_names})\nVALUES\n{query_string_of_records}&#34;&#34;&#34;
     return query</code></pre>
 </details>
