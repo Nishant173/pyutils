@@ -157,15 +157,15 @@ def get_indices_for_partitioning(
     """Returns list of indices to partition an iterable, given the number of partitions"""
     if num_partitions == 0:
         raise ValueError("Number of partitions cannot be 0")
+    if num_partitions > length_of_iterable:
+        raise ValueError("Number of partitions cannot be > length of iterable")
     indices_for_partitioning = [0]
     min_length_per_partition = int(np.floor(length_of_iterable / num_partitions))
     num_residuals = int(length_of_iterable % num_partitions)
     while num_residuals > 0:
-        latest_idx = indices_for_partitioning[-1]
-        length_of_partition = min_length_per_partition + 1
+        indices_for_partitioning.append(indices_for_partitioning[-1] + min_length_per_partition + 1)
         num_residuals -= 1
-        indices_for_partitioning.append(latest_idx + length_of_partition)
-    while len(indices_for_partitioning) != num_partitions + 1:
-        latest_idx = indices_for_partitioning[-1]
-        indices_for_partitioning.append(latest_idx + min_length_per_partition)
+    num_pending_partitions = num_partitions + 1 - len(indices_for_partitioning)
+    for _ in range(num_pending_partitions):
+        indices_for_partitioning.append(indices_for_partitioning[-1] + min_length_per_partition)
     return indices_for_partitioning
