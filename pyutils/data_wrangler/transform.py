@@ -21,7 +21,7 @@ from pyutils.core.type_annotations import (
 )
 from pyutils.core.utils import (
     get_partition_index_ranges,
-    get_partition_lengths,
+    get_partition_sizes,
 )
 
 
@@ -238,14 +238,14 @@ def add_partitioning_column(
     Returns DataFrame with an additional column containing the partition number.
     """
     df = data.copy(deep=True)
-    partition_lengths = get_partition_lengths(
+    partition_sizes = get_partition_sizes(
         length_of_iterable=len(df),
         num_partitions=num_partitions,
     )
     partition_column_values = []
-    for idx, partition_length in enumerate(partition_lengths):
+    for idx, partition_size in enumerate(partition_sizes):
         partition_number = idx + 1
-        partition_column_values.extend([partition_number] * partition_length)
+        partition_column_values.extend([partition_number] * partition_size)
     df[column_name] = partition_column_values
     return df
 

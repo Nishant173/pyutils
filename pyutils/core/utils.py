@@ -150,18 +150,18 @@ def has_positive_number(array: List[Number]) -> bool:
     return False
 
 
-def get_partition_lengths(
+def get_partition_sizes(
         length_of_iterable: int,
         num_partitions: int,
     ) -> List[int]:
-    """Returns lengths of partitions of an iterable. The lengths will be uniformly distributed"""
-    if num_partitions == 0:
-        raise ValueError("Number of partitions cannot be 0")
+    """Returns sizes of partitions of an iterable. The sizes will be uniformly distributed"""
+    if num_partitions <= 0:
+        raise ValueError("Number of partitions cannot be <= 0")
     if num_partitions > length_of_iterable:
         raise ValueError("Number of partitions cannot be > length of iterable")
     min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
-    partition_lengths = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
-    return partition_lengths
+    partition_sizes = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    return partition_sizes
 
 
 def get_partition_index_ranges(
@@ -174,7 +174,7 @@ def get_partition_index_ranges(
 
     >>> get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
     """
-    partition_lengths = get_partition_lengths(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
-    partition_start_indices = [0] + list(np.cumsum(partition_lengths))
+    partition_sizes = get_partition_sizes(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
+    partition_start_indices = [0] + list(np.cumsum(partition_sizes))
     partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
     return partition_index_ranges
