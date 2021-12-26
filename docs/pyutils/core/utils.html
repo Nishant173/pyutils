@@ -178,18 +178,18 @@ def has_positive_number(array: List[Number]) -&gt; bool:
     return False
 
 
-def get_partition_lengths(
+def get_partition_sizes(
         length_of_iterable: int,
         num_partitions: int,
     ) -&gt; List[int]:
-    &#34;&#34;&#34;Returns lengths of partitions of an iterable. The lengths will be uniformly distributed&#34;&#34;&#34;
-    if num_partitions == 0:
-        raise ValueError(&#34;Number of partitions cannot be 0&#34;)
+    &#34;&#34;&#34;Returns sizes of partitions of an iterable. The sizes will be uniformly distributed&#34;&#34;&#34;
+    if num_partitions &lt;= 0:
+        raise ValueError(&#34;Number of partitions cannot be &lt;= 0&#34;)
     if num_partitions &gt; length_of_iterable:
         raise ValueError(&#34;Number of partitions cannot be &gt; length of iterable&#34;)
     min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
-    partition_lengths = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
-    return partition_lengths
+    partition_sizes = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    return partition_sizes
 
 
 def get_partition_index_ranges(
@@ -202,8 +202,8 @@ def get_partition_index_ranges(
 
     &gt;&gt;&gt; get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
     &#34;&#34;&#34;
-    partition_lengths = get_partition_lengths(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
-    partition_start_indices = [0] + list(np.cumsum(partition_lengths))
+    partition_sizes = get_partition_sizes(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
+    partition_start_indices = [0] + list(np.cumsum(partition_sizes))
     partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
     return partition_index_ranges</code></pre>
 </details>
@@ -290,33 +290,33 @@ The indices are zero-based. The partitions will be uniformly distributed.</p>
 
     &gt;&gt;&gt; get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
     &#34;&#34;&#34;
-    partition_lengths = get_partition_lengths(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
-    partition_start_indices = [0] + list(np.cumsum(partition_lengths))
+    partition_sizes = get_partition_sizes(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
+    partition_start_indices = [0] + list(np.cumsum(partition_sizes))
     partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
     return partition_index_ranges</code></pre>
 </details>
 </dd>
-<dt id="pyutils.core.utils.get_partition_lengths"><code class="name flex">
-<span>def <span class="ident">get_partition_lengths</span></span>(<span>length_of_iterable: int, num_partitions: int) ‑> List[int]</span>
+<dt id="pyutils.core.utils.get_partition_sizes"><code class="name flex">
+<span>def <span class="ident">get_partition_sizes</span></span>(<span>length_of_iterable: int, num_partitions: int) ‑> List[int]</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns lengths of partitions of an iterable. The lengths will be uniformly distributed</p></div>
+<div class="desc"><p>Returns sizes of partitions of an iterable. The sizes will be uniformly distributed</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_partition_lengths(
+<pre><code class="python">def get_partition_sizes(
         length_of_iterable: int,
         num_partitions: int,
     ) -&gt; List[int]:
-    &#34;&#34;&#34;Returns lengths of partitions of an iterable. The lengths will be uniformly distributed&#34;&#34;&#34;
-    if num_partitions == 0:
-        raise ValueError(&#34;Number of partitions cannot be 0&#34;)
+    &#34;&#34;&#34;Returns sizes of partitions of an iterable. The sizes will be uniformly distributed&#34;&#34;&#34;
+    if num_partitions &lt;= 0:
+        raise ValueError(&#34;Number of partitions cannot be &lt;= 0&#34;)
     if num_partitions &gt; length_of_iterable:
         raise ValueError(&#34;Number of partitions cannot be &gt; length of iterable&#34;)
     min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
-    partition_lengths = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
-    return partition_lengths</code></pre>
+    partition_sizes = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    return partition_sizes</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.get_random_choice_except"><code class="name flex">
@@ -562,7 +562,7 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
 <li><code><a title="pyutils.core.utils.get_max_of_abs_values" href="#pyutils.core.utils.get_max_of_abs_values">get_max_of_abs_values</a></code></li>
 <li><code><a title="pyutils.core.utils.get_min_of_abs_values" href="#pyutils.core.utils.get_min_of_abs_values">get_min_of_abs_values</a></code></li>
 <li><code><a title="pyutils.core.utils.get_partition_index_ranges" href="#pyutils.core.utils.get_partition_index_ranges">get_partition_index_ranges</a></code></li>
-<li><code><a title="pyutils.core.utils.get_partition_lengths" href="#pyutils.core.utils.get_partition_lengths">get_partition_lengths</a></code></li>
+<li><code><a title="pyutils.core.utils.get_partition_sizes" href="#pyutils.core.utils.get_partition_sizes">get_partition_sizes</a></code></li>
 <li><code><a title="pyutils.core.utils.get_random_choice_except" href="#pyutils.core.utils.get_random_choice_except">get_random_choice_except</a></code></li>
 <li><code><a title="pyutils.core.utils.get_timetaken_dictionary" href="#pyutils.core.utils.get_timetaken_dictionary">get_timetaken_dictionary</a></code></li>
 <li><code><a title="pyutils.core.utils.get_timetaken_fstring" href="#pyutils.core.utils.get_timetaken_fstring">get_timetaken_fstring</a></code></li>
