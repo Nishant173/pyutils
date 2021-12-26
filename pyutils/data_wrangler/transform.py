@@ -258,11 +258,12 @@ def partition_dataframe_by_num_partitions(
     Partitions a DataFrame horizontally, based on number of partitions given.
     Returns list of partitioned DataFrames.
     """
+    df = data.copy(deep=True)
     partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(data),
+        length_of_iterable=len(df),
         num_partitions=num_partitions,
     )
-    return [data.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
+    return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
 
 
 def partition_dataframe_by_max_partition_length(
