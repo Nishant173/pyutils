@@ -250,7 +250,7 @@ def add_partitioning_column(
     return df_partitioned
 
 
-def partition_dataframe(
+def partition_dataframe_by_num_partitions(
         data: pd.DataFrame,
         num_partitions: int,
     ) -> List[pd.DataFrame]:
@@ -268,6 +268,18 @@ def partition_dataframe(
         df_by_partition = data.iloc[idx_start : idx_end]
         list_of_dataframes.append(df_by_partition)
     return list_of_dataframes
+
+
+def partition_dataframe_by_max_partition_length(
+        data: pd.DataFrame,
+        max_partition_length: int,
+    ) -> List[pd.DataFrame]:
+    """
+    Partitions a DataFrame horizontally, based on maximum partition length given.
+    Returns list of partitioned DataFrames.
+    """
+    num_partitions = int(np.ceil(len(data) / max_partition_length))
+    return partition_dataframe_by_num_partitions(data=data, num_partitions=num_partitions)
 
 
 def switch_column_casing(
