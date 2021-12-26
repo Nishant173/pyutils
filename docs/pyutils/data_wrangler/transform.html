@@ -278,7 +278,7 @@ def add_partitioning_column(
     return df_partitioned
 
 
-def partition_dataframe(
+def partition_dataframe_by_num_partitions(
         data: pd.DataFrame,
         num_partitions: int,
     ) -&gt; List[pd.DataFrame]:
@@ -296,6 +296,18 @@ def partition_dataframe(
         df_by_partition = data.iloc[idx_start : idx_end]
         list_of_dataframes.append(df_by_partition)
     return list_of_dataframes
+
+
+def partition_dataframe_by_max_partition_length(
+        data: pd.DataFrame,
+        max_partition_length: int,
+    ) -&gt; List[pd.DataFrame]:
+    &#34;&#34;&#34;
+    Partitions a DataFrame horizontally, based on maximum partition length given.
+    Returns list of partitioned DataFrames.
+    &#34;&#34;&#34;
+    num_partitions = int(np.ceil(len(data) / max_partition_length))
+    return partition_dataframe_by_num_partitions(data=data, num_partitions=num_partitions)
 
 
 def switch_column_casing(
@@ -703,8 +715,30 @@ Note: Does not work with NaN values.</p></div>
     return df</code></pre>
 </details>
 </dd>
-<dt id="pyutils.data_wrangler.transform.partition_dataframe"><code class="name flex">
-<span>def <span class="ident">partition_dataframe</span></span>(<span>data: pandas.core.frame.DataFrame, num_partitions: int) ‑> List[pandas.core.frame.DataFrame]</span>
+<dt id="pyutils.data_wrangler.transform.partition_dataframe_by_max_partition_length"><code class="name flex">
+<span>def <span class="ident">partition_dataframe_by_max_partition_length</span></span>(<span>data: pandas.core.frame.DataFrame, max_partition_length: int) ‑> List[pandas.core.frame.DataFrame]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Partitions a DataFrame horizontally, based on maximum partition length given.
+Returns list of partitioned DataFrames.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def partition_dataframe_by_max_partition_length(
+        data: pd.DataFrame,
+        max_partition_length: int,
+    ) -&gt; List[pd.DataFrame]:
+    &#34;&#34;&#34;
+    Partitions a DataFrame horizontally, based on maximum partition length given.
+    Returns list of partitioned DataFrames.
+    &#34;&#34;&#34;
+    num_partitions = int(np.ceil(len(data) / max_partition_length))
+    return partition_dataframe_by_num_partitions(data=data, num_partitions=num_partitions)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.data_wrangler.transform.partition_dataframe_by_num_partitions"><code class="name flex">
+<span>def <span class="ident">partition_dataframe_by_num_partitions</span></span>(<span>data: pandas.core.frame.DataFrame, num_partitions: int) ‑> List[pandas.core.frame.DataFrame]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Partitions a DataFrame horizontally, based on number of partitions given.
@@ -713,7 +747,7 @@ Returns list of partitioned DataFrames.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def partition_dataframe(
+<pre><code class="python">def partition_dataframe_by_num_partitions(
         data: pd.DataFrame,
         num_partitions: int,
     ) -&gt; List[pd.DataFrame]:
@@ -1241,7 +1275,8 @@ Options for <code>casing_type</code>:
 <li><code><a title="pyutils.data_wrangler.transform.merge_dataframes" href="#pyutils.data_wrangler.transform.merge_dataframes">merge_dataframes</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.normalize_array" href="#pyutils.data_wrangler.transform.normalize_array">normalize_array</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.normalize_numerical_columns" href="#pyutils.data_wrangler.transform.normalize_numerical_columns">normalize_numerical_columns</a></code></li>
-<li><code><a title="pyutils.data_wrangler.transform.partition_dataframe" href="#pyutils.data_wrangler.transform.partition_dataframe">partition_dataframe</a></code></li>
+<li><code><a title="pyutils.data_wrangler.transform.partition_dataframe_by_max_partition_length" href="#pyutils.data_wrangler.transform.partition_dataframe_by_max_partition_length">partition_dataframe_by_max_partition_length</a></code></li>
+<li><code><a title="pyutils.data_wrangler.transform.partition_dataframe_by_num_partitions" href="#pyutils.data_wrangler.transform.partition_dataframe_by_num_partitions">partition_dataframe_by_num_partitions</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.prettify_datetime_columns" href="#pyutils.data_wrangler.transform.prettify_datetime_columns">prettify_datetime_columns</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.randomly_fill_categorical_nans" href="#pyutils.data_wrangler.transform.randomly_fill_categorical_nans">randomly_fill_categorical_nans</a></code></li>
 <li><code><a title="pyutils.data_wrangler.transform.rank_and_sort" href="#pyutils.data_wrangler.transform.rank_and_sort">rank_and_sort</a></code></li>
