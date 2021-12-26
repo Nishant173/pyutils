@@ -286,11 +286,12 @@ def partition_dataframe_by_num_partitions(
     Partitions a DataFrame horizontally, based on number of partitions given.
     Returns list of partitioned DataFrames.
     &#34;&#34;&#34;
+    df = data.copy(deep=True)
     partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(data),
+        length_of_iterable=len(df),
         num_partitions=num_partitions,
     )
-    return [data.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
+    return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
 
 
 def partition_dataframe_by_max_partition_length(
@@ -747,11 +748,12 @@ Returns list of partitioned DataFrames.</p></div>
     Partitions a DataFrame horizontally, based on number of partitions given.
     Returns list of partitioned DataFrames.
     &#34;&#34;&#34;
+    df = data.copy(deep=True)
     partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(data),
+        length_of_iterable=len(df),
         num_partitions=num_partitions,
     )
-    return [data.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]</code></pre>
+    return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]</code></pre>
 </details>
 </dd>
 <dt id="pyutils.data_wrangler.transform.prettify_datetime_columns"><code class="name flex">
