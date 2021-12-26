@@ -19,7 +19,10 @@ from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
 )
-from pyutils.core.utils import get_indices_for_partitioning
+from pyutils.core.utils import (
+    get_partition_index_ranges,
+    get_partition_lengths,
+)
 
 
 def get_mapping_between_columns(
@@ -235,19 +238,16 @@ def add_partitioning_column(
     Returns DataFrame with an additional column containing the partition number.
     """
     df = data.copy(deep=True)
-    indices_for_partitioning = get_indices_for_partitioning(
+    partition_lengths = get_partition_lengths(
         length_of_iterable=len(df),
         num_partitions=num_partitions,
     )
-    partition_number = 0
-    df_partitioned = pd.DataFrame()
-    for i in range(len(indices_for_partitioning) - 1):
-        partition_number += 1
-        idx_start, idx_end = indices_for_partitioning[i], indices_for_partitioning[i+1]
-        df_by_partition = df.iloc[idx_start : idx_end].copy()
-        df_by_partition[column_name] = partition_number
-        df_partitioned = pd.concat(objs=[df_partitioned, df_by_partition], ignore_index=True, sort=False)
-    return df_partitioned
+    partition_column_values = []
+    for idx, partition_length in enumerate(partition_lengths):
+        partition_number = idx + 1
+        partition_column_values.extend([partition_number] * partition_length)
+    df[column_name] = partition_column_values
+    return df
 
 
 def partition_dataframe_by_num_partitions(
@@ -258,16 +258,11 @@ def partition_dataframe_by_num_partitions(
     Partitions a DataFrame horizontally, based on number of partitions given.
     Returns list of partitioned DataFrames.
     """
-    list_of_dataframes = []
-    indices_for_partitioning = get_indices_for_partitioning(
+    partition_index_ranges = get_partition_index_ranges(
         length_of_iterable=len(data),
         num_partitions=num_partitions,
     )
-    for i in range(len(indices_for_partitioning) - 1):
-        idx_start, idx_end = indices_for_partitioning[i], indices_for_partitioning[i+1]
-        df_by_partition = data.iloc[idx_start : idx_end]
-        list_of_dataframes.append(df_by_partition)
-    return list_of_dataframes
+    return [data.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
 
 
 def partition_dataframe_by_max_partition_length(
