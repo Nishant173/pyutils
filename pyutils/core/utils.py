@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 import random
 
 import numpy as np
@@ -154,10 +154,7 @@ def has_positive_number(array: List[Number]) -> bool:
     return False
 
 
-def cumulative_aggregate(
-        iterable: List[Union[int, float]],
-        method: str,
-    ) -> List[Union[int, float]]:
+def cumulative_aggregate(iterable: List[Number], method: str) -> List[Number]:
     """
     Returns list of cumulative aggregates.
     Options for `method` are: ['sum', 'difference', 'product', 'division'].
