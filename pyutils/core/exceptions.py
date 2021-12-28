@@ -1,6 +1,21 @@
 from typing import Any, List, Type
 
 
+class InvalidOptionError(Exception):
+    """Error raised when an invalid option is passed in"""
+    pass
+
+
+class InvalidDataFrameError(Exception):
+    """Error raised when an invalid DataFrame is encountered (based on certain expectations)"""
+    pass
+
+
+class MissingRequiredParameterError(Exception):
+    """Error raised when a required parameter is missing"""
+    pass
+
+
 def raise_exception_if_invalid_option(
         option_name: str,
         option_value: Any,
@@ -21,13 +36,3 @@ def raise_exception_if_invalid_type(
     if not isinstance(parameter_value, expected_type):
         raise TypeError(f"Expected `{parameter_name}` to be of type `{expected_type}`, but got type `{type(parameter_value)}`")
     return None
-
-
-class InvalidDataFrameError(Exception):
-    """Error raised when an Invalid DataFrame is encountered (based on certain expectations)"""
-    pass
-
-
-class MissingRequiredParameterError(Exception):
-    """Error raised when a required parameter is missing"""
-    pass
