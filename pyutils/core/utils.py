@@ -13,6 +13,18 @@ from pyutils.core.type_annotations import (
 )
 
 
+def is_none(value: Any) -> bool:
+    return value is None
+
+
+def is_nan(value: Any) -> bool:
+    """Returns True if value given is Numpy's NaN. Otherwise returns False"""
+    if isinstance(value, float):
+        if np.isnan(value):
+            return True
+    return False
+
+
 def is_none_or_nan(value: Any) -> bool:
     """Returns True if value given is Python's native None or Numpy's NaN. Otherwise returns False"""
     if value is None:
