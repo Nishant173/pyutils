@@ -19,10 +19,7 @@ from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
 )
-from pyutils.core.utils import (
-    get_partition_index_ranges,
-    get_partition_sizes,
-)
+from pyutils.core.utils import Partitioner
 
 
 def get_mapping_between_columns(
@@ -238,9 +235,9 @@ def add_partitioning_column(
     Returns DataFrame with an additional column containing the partition number.
     """
     df = data.copy(deep=True)
-    partition_sizes = get_partition_sizes(
-        length_of_iterable=len(df),
+    partition_sizes = Partitioner(iterable_length=len(df)).sizes_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method='uniform',
     )
     partition_column_values = []
     for idx, partition_size in enumerate(partition_sizes):
@@ -259,9 +256,9 @@ def partition_dataframe_by_num_partitions(
     Returns list of partitioned DataFrames.
     """
     df = data.copy(deep=True)
-    partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(df),
+    partition_index_ranges = Partitioner(iterable_length=len(df)).index_ranges_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method='uniform',
     )
     return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
 
