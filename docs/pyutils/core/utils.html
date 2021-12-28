@@ -26,7 +26,7 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple, Union
+<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple
 import random
 
 import numpy as np
@@ -182,10 +182,7 @@ def has_positive_number(array: List[Number]) -&gt; bool:
     return False
 
 
-def cumulative_aggregate(
-        iterable: List[Union[int, float]],
-        method: str,
-    ) -&gt; List[Union[int, float]]:
+def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]:
     &#34;&#34;&#34;
     Returns list of cumulative aggregates.
     Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
@@ -380,10 +377,7 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def cumulative_aggregate(
-        iterable: List[Union[int, float]],
-        method: str,
-    ) -&gt; List[Union[int, float]]:
+<pre><code class="python">def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]:
     &#34;&#34;&#34;
     Returns list of cumulative aggregates.
     Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
