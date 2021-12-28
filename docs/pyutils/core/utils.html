@@ -41,14 +41,21 @@ from pyutils.core.type_annotations import (
 )
 
 
-def is_none_or_nan(value: Any) -&gt; bool:
-    &#34;&#34;&#34;Returns True if value given is Python&#39;s native None or Numpy&#39;s NaN. Otherwise returns False&#34;&#34;&#34;
-    if value is None:
-        return True
+def is_none(value: Any) -&gt; bool:
+    return value is None
+
+
+def is_nan(value: Any) -&gt; bool:
+    &#34;&#34;&#34;Returns True if value given is Numpy&#39;s NaN. Otherwise returns False&#34;&#34;&#34;
     if isinstance(value, float):
         if np.isnan(value):
             return True
     return False
+
+
+def is_none_or_nan(value: Any) -&gt; bool:
+    &#34;&#34;&#34;Returns True if value given is Python&#39;s native None or Numpy&#39;s NaN. Otherwise returns False&#34;&#34;&#34;
+    return is_none(value=value) or is_nan(value=value)
 
 
 def get_timetaken_dictionary(num_seconds: Number) -&gt; Dict[str, Number]:
@@ -182,7 +189,7 @@ def has_positive_number(array: List[Number]) -&gt; bool:
     return False
 
 
-def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]:
+def cumulative_aggregate(numbers: List[Number], method: str) -&gt; List[Number]:
     &#34;&#34;&#34;
     Returns list of cumulative aggregates.
     Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
@@ -193,10 +200,10 @@ def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]
         valid_option_values=[&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;],
     )
 
-    length = len(iterable)
+    length = len(numbers)
     if length == 0:
         return []
-    cumulative_array = [iterable[0]]
+    cumulative_array = [numbers[0]]
     if length == 1:
         return cumulative_array
     method_mapper = {
@@ -205,7 +212,7 @@ def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]
         &#39;product&#39;: lambda x, y: x * y,
         &#39;division&#39;: lambda x, y: x / y,
     }
-    for number in iterable[1:]:
+    for number in numbers[1:]:
         cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
     return cumulative_array
 
@@ -368,7 +375,7 @@ class Partitioner:
 </details>
 </dd>
 <dt id="pyutils.core.utils.cumulative_aggregate"><code class="name flex">
-<span>def <span class="ident">cumulative_aggregate</span></span>(<span>iterable: List[Union[int, float]], method: str) ‑> List[Union[int, float]]</span>
+<span>def <span class="ident">cumulative_aggregate</span></span>(<span>numbers: List[Union[int, float]], method: str) ‑> List[Union[int, float]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Returns list of cumulative aggregates.
@@ -377,7 +384,7 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def cumulative_aggregate(iterable: List[Number], method: str) -&gt; List[Number]:
+<pre><code class="python">def cumulative_aggregate(numbers: List[Number], method: str) -&gt; List[Number]:
     &#34;&#34;&#34;
     Returns list of cumulative aggregates.
     Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
@@ -388,10 +395,10 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
         valid_option_values=[&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;],
     )
 
-    length = len(iterable)
+    length = len(numbers)
     if length == 0:
         return []
-    cumulative_array = [iterable[0]]
+    cumulative_array = [numbers[0]]
     if length == 1:
         return cumulative_array
     method_mapper = {
@@ -400,7 +407,7 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
         &#39;product&#39;: lambda x, y: x * y,
         &#39;division&#39;: lambda x, y: x / y,
     }
-    for number in iterable[1:]:
+    for number in numbers[1:]:
         cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
     return cumulative_array</code></pre>
 </details>
@@ -564,6 +571,36 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
     return number</code></pre>
 </details>
 </dd>
+<dt id="pyutils.core.utils.is_nan"><code class="name flex">
+<span>def <span class="ident">is_nan</span></span>(<span>value: Any) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns True if value given is Numpy's NaN. Otherwise returns False</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_nan(value: Any) -&gt; bool:
+    &#34;&#34;&#34;Returns True if value given is Numpy&#39;s NaN. Otherwise returns False&#34;&#34;&#34;
+    if isinstance(value, float):
+        if np.isnan(value):
+            return True
+    return False</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.utils.is_none"><code class="name flex">
+<span>def <span class="ident">is_none</span></span>(<span>value: Any) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_none(value: Any) -&gt; bool:
+    return value is None</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.utils.is_none_or_nan"><code class="name flex">
 <span>def <span class="ident">is_none_or_nan</span></span>(<span>value: Any) ‑> bool</span>
 </code></dt>
@@ -575,12 +612,7 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
 </summary>
 <pre><code class="python">def is_none_or_nan(value: Any) -&gt; bool:
     &#34;&#34;&#34;Returns True if value given is Python&#39;s native None or Numpy&#39;s NaN. Otherwise returns False&#34;&#34;&#34;
-    if value is None:
-        return True
-    if isinstance(value, float):
-        if np.isnan(value):
-            return True
-    return False</code></pre>
+    return is_none(value=value) or is_nan(value=value)</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.listify_string_of_nums"><code class="name flex">
@@ -929,6 +961,8 @@ Options for <code>distribution_method</code> are: ['fill', 'uniform']. Default: 
 <li><code><a title="pyutils.core.utils.has_negative_number" href="#pyutils.core.utils.has_negative_number">has_negative_number</a></code></li>
 <li><code><a title="pyutils.core.utils.has_positive_number" href="#pyutils.core.utils.has_positive_number">has_positive_number</a></code></li>
 <li><code><a title="pyutils.core.utils.integerify_if_possible" href="#pyutils.core.utils.integerify_if_possible">integerify_if_possible</a></code></li>
+<li><code><a title="pyutils.core.utils.is_nan" href="#pyutils.core.utils.is_nan">is_nan</a></code></li>
+<li><code><a title="pyutils.core.utils.is_none" href="#pyutils.core.utils.is_none">is_none</a></code></li>
 <li><code><a title="pyutils.core.utils.is_none_or_nan" href="#pyutils.core.utils.is_none_or_nan">is_none_or_nan</a></code></li>
 <li><code><a title="pyutils.core.utils.listify_string_of_nums" href="#pyutils.core.utils.listify_string_of_nums">listify_string_of_nums</a></code></li>
 <li><code><a title="pyutils.core.utils.round_off_as_string" href="#pyutils.core.utils.round_off_as_string">round_off_as_string</a></code></li>
