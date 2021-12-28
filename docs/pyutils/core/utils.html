@@ -300,14 +300,15 @@ class Partitioner:
         Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
         &#34;&#34;&#34;
         self.__validate_num_partitions(num_partitions=num_partitions)
-        valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+        raise_exception_if_invalid_option(
+            option_name=&#39;distribution_method&#39;,
+            option_value=distribution_method,
+            valid_option_values=[&#39;fill&#39;, &#39;uniform&#39;],
+        )
         if distribution_method == &#39;fill&#39;:
             return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
         if distribution_method == &#39;uniform&#39;:
             return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
-        raise ValueError(
-            f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
-        )
     
     def __compute_index_ranges_from_partition_sizes(
             self,
@@ -772,14 +773,15 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
         Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
         &#34;&#34;&#34;
         self.__validate_num_partitions(num_partitions=num_partitions)
-        valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+        raise_exception_if_invalid_option(
+            option_name=&#39;distribution_method&#39;,
+            option_value=distribution_method,
+            valid_option_values=[&#39;fill&#39;, &#39;uniform&#39;],
+        )
         if distribution_method == &#39;fill&#39;:
             return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
         if distribution_method == &#39;uniform&#39;:
             return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
-        raise ValueError(
-            f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
-        )
     
     def __compute_index_ranges_from_partition_sizes(
             self,
@@ -894,14 +896,15 @@ Options for <code>distribution_method</code> are: ['fill', 'uniform']. Default: 
     Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
     &#34;&#34;&#34;
     self.__validate_num_partitions(num_partitions=num_partitions)
-    valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+    raise_exception_if_invalid_option(
+        option_name=&#39;distribution_method&#39;,
+        option_value=distribution_method,
+        valid_option_values=[&#39;fill&#39;, &#39;uniform&#39;],
+    )
     if distribution_method == &#39;fill&#39;:
         return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
     if distribution_method == &#39;uniform&#39;:
-        return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
-    raise ValueError(
-        f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
-    )</code></pre>
+        return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)</code></pre>
 </details>
 </dd>
 </dl>

@@ -29,6 +29,21 @@
 <pre><code class="python">from typing import Any, List, Type
 
 
+class InvalidOptionError(Exception):
+    &#34;&#34;&#34;Error raised when an invalid option is passed in&#34;&#34;&#34;
+    pass
+
+
+class InvalidDataFrameError(Exception):
+    &#34;&#34;&#34;Error raised when an invalid DataFrame is encountered (based on certain expectations)&#34;&#34;&#34;
+    pass
+
+
+class MissingRequiredParameterError(Exception):
+    &#34;&#34;&#34;Error raised when a required parameter is missing&#34;&#34;&#34;
+    pass
+
+
 def raise_exception_if_invalid_option(
         option_name: str,
         option_value: Any,
@@ -36,7 +51,7 @@ def raise_exception_if_invalid_option(
     ) -&gt; None:
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
-        raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
     return None
 
 
@@ -48,17 +63,7 @@ def raise_exception_if_invalid_type(
     &#34;&#34;&#34;Raises a TypeError if the `parameter_value` given is not of the type `expected_type`; otherwise returns None&#34;&#34;&#34;
     if not isinstance(parameter_value, expected_type):
         raise TypeError(f&#34;Expected `{parameter_name}` to be of type `{expected_type}`, but got type `{type(parameter_value)}`&#34;)
-    return None
-
-
-class InvalidDataFrameError(Exception):
-    &#34;&#34;&#34;Error raised when an Invalid DataFrame is encountered (based on certain expectations)&#34;&#34;&#34;
-    pass
-
-
-class MissingRequiredParameterError(Exception):
-    &#34;&#34;&#34;Error raised when a required parameter is missing&#34;&#34;&#34;
-    pass</code></pre>
+    return None</code></pre>
 </details>
 </section>
 <section>
@@ -84,7 +89,7 @@ class MissingRequiredParameterError(Exception):
     ) -&gt; None:
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
-        raise ValueError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
     return None</code></pre>
 </details>
 </dd>
@@ -118,13 +123,33 @@ class MissingRequiredParameterError(Exception):
 <span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Error raised when an Invalid DataFrame is encountered (based on certain expectations)</p></div>
+<div class="desc"><p>Error raised when an invalid DataFrame is encountered (based on certain expectations)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class InvalidDataFrameError(Exception):
-    &#34;&#34;&#34;Error raised when an Invalid DataFrame is encountered (based on certain expectations)&#34;&#34;&#34;
+    &#34;&#34;&#34;Error raised when an invalid DataFrame is encountered (based on certain expectations)&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="pyutils.core.exceptions.InvalidOptionError"><code class="flex name class">
+<span>class <span class="ident">InvalidOptionError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Error raised when an invalid option is passed in</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class InvalidOptionError(Exception):
+    &#34;&#34;&#34;Error raised when an invalid option is passed in&#34;&#34;&#34;
     pass</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -177,6 +202,9 @@ class MissingRequiredParameterError(Exception):
 <ul>
 <li>
 <h4><code><a title="pyutils.core.exceptions.InvalidDataFrameError" href="#pyutils.core.exceptions.InvalidDataFrameError">InvalidDataFrameError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="pyutils.core.exceptions.InvalidOptionError" href="#pyutils.core.exceptions.InvalidOptionError">InvalidOptionError</a></code></h4>
 </li>
 <li>
 <h4><code><a title="pyutils.core.exceptions.MissingRequiredParameterError" href="#pyutils.core.exceptions.MissingRequiredParameterError">MissingRequiredParameterError</a></code></h4>
