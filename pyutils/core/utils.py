@@ -154,7 +154,7 @@ def has_positive_number(array: List[Number]) -> bool:
     return False
 
 
-def cumulative_aggregate(iterable: List[Number], method: str) -> List[Number]:
+def cumulative_aggregate(numbers: List[Number], method: str) -> List[Number]:
     """
     Returns list of cumulative aggregates.
     Options for `method` are: ['sum', 'difference', 'product', 'division'].
@@ -165,10 +165,10 @@ def cumulative_aggregate(iterable: List[Number], method: str) -> List[Number]:
         valid_option_values=['sum', 'difference', 'product', 'division'],
     )
 
-    length = len(iterable)
+    length = len(numbers)
     if length == 0:
         return []
-    cumulative_array = [iterable[0]]
+    cumulative_array = [numbers[0]]
     if length == 1:
         return cumulative_array
     method_mapper = {
@@ -177,7 +177,7 @@ def cumulative_aggregate(iterable: List[Number], method: str) -> List[Number]:
         'product': lambda x, y: x * y,
         'division': lambda x, y: x / y,
     }
-    for number in iterable[1:]:
+    for number in numbers[1:]:
         cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
     return cumulative_array
 
