@@ -1,8 +1,12 @@
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 import random
 
 import numpy as np
 
+from pyutils.core.exceptions import (
+    raise_exception_if_invalid_option,
+    raise_exception_if_invalid_type,
+)
 from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
@@ -150,6 +154,37 @@ def has_positive_number(array: List[Number]) -> bool:
     return False
 
 
+def cumulative_aggregate(
+        iterable: List[Union[int, float]],
+        method: str,
+    ) -> List[Union[int, float]]:
+    """
+    Returns list of cumulative aggregates.
+    Options for `method` are: ['sum', 'difference', 'product', 'division'].
+    """
+    raise_exception_if_invalid_option(
+        option_name='method',
+        option_value=method,
+        valid_option_values=['sum', 'difference', 'product', 'division'],
+    )
+
+    length = len(iterable)
+    if length == 0:
+        return []
+    cumulative_array = [iterable[0]]
+    if length == 1:
+        return cumulative_array
+    method_mapper = {
+        'sum': lambda x, y: x + y,
+        'difference': lambda x, y: x - y,
+        'product': lambda x, y: x * y,
+        'division': lambda x, y: x / y,
+    }
+    for number in iterable[1:]:
+        cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
+    return cumulative_array
+
+
 def get_partition_sizes(
         length_of_iterable: int,
         num_partitions: int,
@@ -178,3 +213,129 @@ def get_partition_index_ranges(
     partition_start_indices = [0] + list(np.cumsum(partition_sizes))
     partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
     return partition_index_ranges
+
+
+
+class Partitioner:
+    """
+    Class for iterable partitioning.
+
+    >>> partitioner = Partitioner(iterable_length=100)
+    >>> kwargs = {
+            'num_partitions': 8,
+            'distribution_method': 'uniform',
+        }
+    >>> partitioner.sizes_by_num_partitions(**kwargs)
+    >>> partitioner.index_ranges_by_num_partitions(**kwargs)
+    >>> partitioner.sizes_by_max_partition_size(max_partition_size=15)
+    >>> partitioner.index_ranges_by_max_partition_size(max_partition_size=15)
+    """
+
+    def __init__(self, iterable_length: int) -> None:
+        self.__validate_iterable_length(iterable_length=iterable_length)
+        self.__iterable_length = iterable_length
+    
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(iterable_length={self.__iterable_length})"
+    
+    def __validate_iterable_length(self, iterable_length: int) -> None:
+        raise_exception_if_invalid_type(
+            parameter_name='iterable_length',
+            parameter_value=iterable_length,
+            expected_type=int,
+        )
+        if iterable_length < 0:
+            raise ValueError("The parameter `iterable_length` cannot be < 0")
+        return None
+    
+    def __validate_max_partition_size(self, max_partition_size: int) -> None:
+        raise_exception_if_invalid_type(
+            parameter_name='max_partition_size',
+            parameter_value=max_partition_size,
+            expected_type=int,
+        )
+        if max_partition_size <= 0:
+            raise ValueError("The parameter `max_partition_size` cannot be <= 0")
+        if max_partition_size > self.__iterable_length:
+            raise ValueError("The parameter `max_partition_size` cannot be > length of the iterable")
+        return None
+    
+    def __validate_num_partitions(self, num_partitions: int) -> None:
+        raise_exception_if_invalid_type(
+            parameter_name='num_partitions',
+            parameter_value=num_partitions,
+            expected_type=int,
+        )
+        if num_partitions <= 0:
+            raise ValueError("The parameter `num_partitions` cannot be <= 0")
+        if num_partitions > self.__iterable_length:
+            raise ValueError("The parameter `num_partitions` cannot be > length of the iterable")
+        return None
+    
+    def sizes_by_max_partition_size(self, max_partition_size: int) -> List[int]:
+        """Returns list of sizes of each partition"""
+        self.__validate_max_partition_size(max_partition_size=max_partition_size)
+        num_full_partitions, last_partition_size = divmod(self.__iterable_length, max_partition_size)
+        if last_partition_size == 0:
+            return [max_partition_size] * num_full_partitions
+        return [max_partition_size] * num_full_partitions + [last_partition_size]
+    
+    def __sizes_by_fill_distribution(self, num_partitions: int) -> List[int]:
+        full_partition_size, last_partition_size = divmod(self.__iterable_length, num_partitions)
+        if last_partition_size == 0:
+            return [full_partition_size] * num_partitions
+        sizes = [full_partition_size] * (num_partitions - 1)
+        sizes.insert(0, full_partition_size + last_partition_size)
+        return sizes
+    
+    def __sizes_by_uniform_distribution(self, num_partitions: int) -> List[int]:
+        min_partition_size, num_residuals = divmod(self.__iterable_length, num_partitions)
+        return [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    
+    def sizes_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = 'uniform',
+        ) -> List[int]:
+        """
+        Returns list of sizes of each partition.
+        Options for `distribution_method` are: ['fill', 'uniform']. Default: 'uniform'
+        """
+        self.__validate_num_partitions(num_partitions=num_partitions)
+        valid_distribution_method_options = ['fill', 'uniform']
+        if distribution_method == 'fill':
+            return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
+        if distribution_method == 'uniform':
+            return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
+        raise ValueError(
+            f"Got an invalid option for `distribution_method`: '{distribution_method}'. Expected one of {valid_distribution_method_options}"
+        )
+    
+    def __compute_index_ranges_from_partition_sizes(
+            self,
+            partition_sizes: List[int],
+        ) -> List[Tuple[int, int]]:
+        start_indices = [0] + list(np.cumsum(partition_sizes))
+        index_ranges = [(start_indices[idx], start_indices[idx+1]) for idx in range(len(start_indices) - 1)]
+        return index_ranges
+    
+    def index_ranges_by_max_partition_size(self, max_partition_size: int) -> List[Tuple[int, int]]:
+        """
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        """
+        sizes = self.sizes_by_max_partition_size(max_partition_size=max_partition_size)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)
+    
+    def index_ranges_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = 'uniform',
+        ) -> List[Tuple[int, int]]:
+        """
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        Options for `distribution_method` are: ['fill', 'uniform']. Default: 'uniform'
+        """
+        sizes = self.sizes_by_num_partitions(num_partitions=num_partitions, distribution_method=distribution_method)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)
