@@ -272,14 +272,15 @@ class Partitioner:
         Options for `distribution_method` are: ['fill', 'uniform']. Default: 'uniform'
         """
         self.__validate_num_partitions(num_partitions=num_partitions)
-        valid_distribution_method_options = ['fill', 'uniform']
+        raise_exception_if_invalid_option(
+            option_name='distribution_method',
+            option_value=distribution_method,
+            valid_option_values=['fill', 'uniform'],
+        )
         if distribution_method == 'fill':
             return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
         if distribution_method == 'uniform':
             return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
-        raise ValueError(
-            f"Got an invalid option for `distribution_method`: '{distribution_method}'. Expected one of {valid_distribution_method_options}"
-        )
     
     def __compute_index_ranges_from_partition_sizes(
             self,
