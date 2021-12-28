@@ -27,12 +27,7 @@ def is_nan(value: Any) -> bool:
 
 def is_none_or_nan(value: Any) -> bool:
     """Returns True if value given is Python's native None or Numpy's NaN. Otherwise returns False"""
-    if value is None:
-        return True
-    if isinstance(value, float):
-        if np.isnan(value):
-            return True
-    return False
+    return is_none(value=value) or is_nan(value=value)
 
 
 def get_timetaken_dictionary(num_seconds: Number) -> Dict[str, Number]:
