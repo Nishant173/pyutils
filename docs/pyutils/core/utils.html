@@ -26,11 +26,15 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from typing import Any, Dict, List, Tuple
+<pre><code class="python">from typing import Any, Dict, List, Optional, Tuple, Union
 import random
 
 import numpy as np
 
+from pyutils.core.exceptions import (
+    raise_exception_if_invalid_option,
+    raise_exception_if_invalid_type,
+)
 from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
@@ -178,34 +182,161 @@ def has_positive_number(array: List[Number]) -&gt; bool:
     return False
 
 
-def get_partition_sizes(
-        length_of_iterable: int,
-        num_partitions: int,
-    ) -&gt; List[int]:
-    &#34;&#34;&#34;Returns sizes of partitions of an iterable. The sizes will be uniformly distributed&#34;&#34;&#34;
-    if num_partitions &lt;= 0:
-        raise ValueError(&#34;Number of partitions cannot be &lt;= 0&#34;)
-    if num_partitions &gt; length_of_iterable:
-        raise ValueError(&#34;Number of partitions cannot be &gt; length of iterable&#34;)
-    min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
-    partition_sizes = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
-    return partition_sizes
-
-
-def get_partition_index_ranges(
-        length_of_iterable: int,
-        num_partitions: int,
-    ) -&gt; List[Tuple[int, int]]:
+def cumulative_aggregate(
+        iterable: List[Union[int, float]],
+        method: str,
+    ) -&gt; List[Union[int, float]]:
     &#34;&#34;&#34;
-    Returns list of tuples having (start_index, end_index) that partition an iterable.
-    The indices are zero-based. The partitions will be uniformly distributed.
-
-    &gt;&gt;&gt; get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
+    Returns list of cumulative aggregates.
+    Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
     &#34;&#34;&#34;
-    partition_sizes = get_partition_sizes(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
-    partition_start_indices = [0] + list(np.cumsum(partition_sizes))
-    partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
-    return partition_index_ranges</code></pre>
+    raise_exception_if_invalid_option(
+        option_name=&#39;method&#39;,
+        option_value=method,
+        valid_option_values=[&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;],
+    )
+
+    length = len(iterable)
+    if length == 0:
+        return []
+    cumulative_array = [iterable[0]]
+    if length == 1:
+        return cumulative_array
+    method_mapper = {
+        &#39;sum&#39;: lambda x, y: x + y,
+        &#39;difference&#39;: lambda x, y: x - y,
+        &#39;product&#39;: lambda x, y: x * y,
+        &#39;division&#39;: lambda x, y: x / y,
+    }
+    for number in iterable[1:]:
+        cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
+    return cumulative_array
+
+
+
+class Partitioner:
+    &#34;&#34;&#34;
+    Class for iterable partitioning.
+
+    &gt;&gt;&gt; partitioner = Partitioner(iterable_length=100)
+    &gt;&gt;&gt; kwargs = {
+            &#39;num_partitions&#39;: 8,
+            &#39;distribution_method&#39;: &#39;uniform&#39;,
+        }
+    &gt;&gt;&gt; partitioner.sizes_by_num_partitions(**kwargs)
+    &gt;&gt;&gt; partitioner.index_ranges_by_num_partitions(**kwargs)
+    &gt;&gt;&gt; partitioner.sizes_by_max_partition_size(max_partition_size=15)
+    &gt;&gt;&gt; partitioner.index_ranges_by_max_partition_size(max_partition_size=15)
+    &#34;&#34;&#34;
+
+    def __init__(self, iterable_length: int) -&gt; None:
+        self.__validate_iterable_length(iterable_length=iterable_length)
+        self.__iterable_length = iterable_length
+    
+    def __str__(self) -&gt; str:
+        return f&#34;{self.__class__.__name__}(iterable_length={self.__iterable_length})&#34;
+    
+    def __validate_iterable_length(self, iterable_length: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;iterable_length&#39;,
+            parameter_value=iterable_length,
+            expected_type=int,
+        )
+        if iterable_length &lt; 0:
+            raise ValueError(&#34;The parameter `iterable_length` cannot be &lt; 0&#34;)
+        return None
+    
+    def __validate_max_partition_size(self, max_partition_size: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;max_partition_size&#39;,
+            parameter_value=max_partition_size,
+            expected_type=int,
+        )
+        if max_partition_size &lt;= 0:
+            raise ValueError(&#34;The parameter `max_partition_size` cannot be &lt;= 0&#34;)
+        if max_partition_size &gt; self.__iterable_length:
+            raise ValueError(&#34;The parameter `max_partition_size` cannot be &gt; length of the iterable&#34;)
+        return None
+    
+    def __validate_num_partitions(self, num_partitions: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_partitions&#39;,
+            parameter_value=num_partitions,
+            expected_type=int,
+        )
+        if num_partitions &lt;= 0:
+            raise ValueError(&#34;The parameter `num_partitions` cannot be &lt;= 0&#34;)
+        if num_partitions &gt; self.__iterable_length:
+            raise ValueError(&#34;The parameter `num_partitions` cannot be &gt; length of the iterable&#34;)
+        return None
+    
+    def sizes_by_max_partition_size(self, max_partition_size: int) -&gt; List[int]:
+        &#34;&#34;&#34;Returns list of sizes of each partition&#34;&#34;&#34;
+        self.__validate_max_partition_size(max_partition_size=max_partition_size)
+        num_full_partitions, last_partition_size = divmod(self.__iterable_length, max_partition_size)
+        if last_partition_size == 0:
+            return [max_partition_size] * num_full_partitions
+        return [max_partition_size] * num_full_partitions + [last_partition_size]
+    
+    def __sizes_by_fill_distribution(self, num_partitions: int) -&gt; List[int]:
+        full_partition_size, last_partition_size = divmod(self.__iterable_length, num_partitions)
+        if last_partition_size == 0:
+            return [full_partition_size] * num_partitions
+        sizes = [full_partition_size] * (num_partitions - 1)
+        sizes.insert(0, full_partition_size + last_partition_size)
+        return sizes
+    
+    def __sizes_by_uniform_distribution(self, num_partitions: int) -&gt; List[int]:
+        min_partition_size, num_residuals = divmod(self.__iterable_length, num_partitions)
+        return [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    
+    def sizes_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = &#39;uniform&#39;,
+        ) -&gt; List[int]:
+        &#34;&#34;&#34;
+        Returns list of sizes of each partition.
+        Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+        &#34;&#34;&#34;
+        self.__validate_num_partitions(num_partitions=num_partitions)
+        valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+        if distribution_method == &#39;fill&#39;:
+            return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
+        if distribution_method == &#39;uniform&#39;:
+            return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
+        raise ValueError(
+            f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
+        )
+    
+    def __compute_index_ranges_from_partition_sizes(
+            self,
+            partition_sizes: List[int],
+        ) -&gt; List[Tuple[int, int]]:
+        start_indices = [0] + list(np.cumsum(partition_sizes))
+        index_ranges = [(start_indices[idx], start_indices[idx+1]) for idx in range(len(start_indices) - 1)]
+        return index_ranges
+    
+    def index_ranges_by_max_partition_size(self, max_partition_size: int) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        &#34;&#34;&#34;
+        sizes = self.sizes_by_max_partition_size(max_partition_size=max_partition_size)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)
+    
+    def index_ranges_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = &#39;uniform&#39;,
+        ) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+        &#34;&#34;&#34;
+        sizes = self.sizes_by_num_partitions(num_partitions=num_partitions, distribution_method=distribution_method)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)</code></pre>
 </details>
 </section>
 <section>
@@ -238,6 +369,47 @@ def get_partition_index_ranges(
     return format(number, &#34;,f&#34;)</code></pre>
 </details>
 </dd>
+<dt id="pyutils.core.utils.cumulative_aggregate"><code class="name flex">
+<span>def <span class="ident">cumulative_aggregate</span></span>(<span>iterable: List[Union[int, float]], method: str) ‑> List[Union[int, float]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of cumulative aggregates.
+Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'].</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cumulative_aggregate(
+        iterable: List[Union[int, float]],
+        method: str,
+    ) -&gt; List[Union[int, float]]:
+    &#34;&#34;&#34;
+    Returns list of cumulative aggregates.
+    Options for `method` are: [&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;].
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_option(
+        option_name=&#39;method&#39;,
+        option_value=method,
+        valid_option_values=[&#39;sum&#39;, &#39;difference&#39;, &#39;product&#39;, &#39;division&#39;],
+    )
+
+    length = len(iterable)
+    if length == 0:
+        return []
+    cumulative_array = [iterable[0]]
+    if length == 1:
+        return cumulative_array
+    method_mapper = {
+        &#39;sum&#39;: lambda x, y: x + y,
+        &#39;difference&#39;: lambda x, y: x - y,
+        &#39;product&#39;: lambda x, y: x * y,
+        &#39;division&#39;: lambda x, y: x / y,
+    }
+    for number in iterable[1:]:
+        cumulative_array.append(method_mapper[method](cumulative_array[-1], number))
+    return cumulative_array</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.utils.get_max_of_abs_values"><code class="name flex">
 <span>def <span class="ident">get_max_of_abs_values</span></span>(<span>array: List[Union[int, float]]) ‑> Union[int, float]</span>
 </code></dt>
@@ -266,57 +438,6 @@ def get_partition_index_ranges(
     &#34;&#34;&#34;Finds minimum of absolute values of numbers in an array&#34;&#34;&#34;
     array_abs = list(map(abs, array))
     return min(array_abs)</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.utils.get_partition_index_ranges"><code class="name flex">
-<span>def <span class="ident">get_partition_index_ranges</span></span>(<span>length_of_iterable: int, num_partitions: int) ‑> List[Tuple[int, int]]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns list of tuples having (start_index, end_index) that partition an iterable.
-The indices are zero-based. The partitions will be uniformly distributed.</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
-</code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_partition_index_ranges(
-        length_of_iterable: int,
-        num_partitions: int,
-    ) -&gt; List[Tuple[int, int]]:
-    &#34;&#34;&#34;
-    Returns list of tuples having (start_index, end_index) that partition an iterable.
-    The indices are zero-based. The partitions will be uniformly distributed.
-
-    &gt;&gt;&gt; get_partition_index_ranges(length_of_iterable=100, num_partitions=6) # Returns [(0, 17), (17, 34), (34, 51), (51, 68), (68, 84), (84, 100)]
-    &#34;&#34;&#34;
-    partition_sizes = get_partition_sizes(length_of_iterable=length_of_iterable, num_partitions=num_partitions)
-    partition_start_indices = [0] + list(np.cumsum(partition_sizes))
-    partition_index_ranges = [(partition_start_indices[idx], partition_start_indices[idx+1]) for idx in range(len(partition_start_indices) - 1)]
-    return partition_index_ranges</code></pre>
-</details>
-</dd>
-<dt id="pyutils.core.utils.get_partition_sizes"><code class="name flex">
-<span>def <span class="ident">get_partition_sizes</span></span>(<span>length_of_iterable: int, num_partitions: int) ‑> List[int]</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Returns sizes of partitions of an iterable. The sizes will be uniformly distributed</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_partition_sizes(
-        length_of_iterable: int,
-        num_partitions: int,
-    ) -&gt; List[int]:
-    &#34;&#34;&#34;Returns sizes of partitions of an iterable. The sizes will be uniformly distributed&#34;&#34;&#34;
-    if num_partitions &lt;= 0:
-        raise ValueError(&#34;Number of partitions cannot be &lt;= 0&#34;)
-    if num_partitions &gt; length_of_iterable:
-        raise ValueError(&#34;Number of partitions cannot be &gt; length of iterable&#34;)
-    min_partition_size, num_residuals = divmod(length_of_iterable, num_partitions)
-    partition_sizes = [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
-    return partition_sizes</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.utils.get_random_choice_except"><code class="name flex">
@@ -543,6 +664,249 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="pyutils.core.utils.Partitioner"><code class="flex name class">
+<span>class <span class="ident">Partitioner</span></span>
+<span>(</span><span>iterable_length: int)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class for iterable partitioning.</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; partitioner = Partitioner(iterable_length=100)
+&gt;&gt;&gt; kwargs = {
+        'num_partitions': 8,
+        'distribution_method': 'uniform',
+    }
+&gt;&gt;&gt; partitioner.sizes_by_num_partitions(**kwargs)
+&gt;&gt;&gt; partitioner.index_ranges_by_num_partitions(**kwargs)
+&gt;&gt;&gt; partitioner.sizes_by_max_partition_size(max_partition_size=15)
+&gt;&gt;&gt; partitioner.index_ranges_by_max_partition_size(max_partition_size=15)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Partitioner:
+    &#34;&#34;&#34;
+    Class for iterable partitioning.
+
+    &gt;&gt;&gt; partitioner = Partitioner(iterable_length=100)
+    &gt;&gt;&gt; kwargs = {
+            &#39;num_partitions&#39;: 8,
+            &#39;distribution_method&#39;: &#39;uniform&#39;,
+        }
+    &gt;&gt;&gt; partitioner.sizes_by_num_partitions(**kwargs)
+    &gt;&gt;&gt; partitioner.index_ranges_by_num_partitions(**kwargs)
+    &gt;&gt;&gt; partitioner.sizes_by_max_partition_size(max_partition_size=15)
+    &gt;&gt;&gt; partitioner.index_ranges_by_max_partition_size(max_partition_size=15)
+    &#34;&#34;&#34;
+
+    def __init__(self, iterable_length: int) -&gt; None:
+        self.__validate_iterable_length(iterable_length=iterable_length)
+        self.__iterable_length = iterable_length
+    
+    def __str__(self) -&gt; str:
+        return f&#34;{self.__class__.__name__}(iterable_length={self.__iterable_length})&#34;
+    
+    def __validate_iterable_length(self, iterable_length: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;iterable_length&#39;,
+            parameter_value=iterable_length,
+            expected_type=int,
+        )
+        if iterable_length &lt; 0:
+            raise ValueError(&#34;The parameter `iterable_length` cannot be &lt; 0&#34;)
+        return None
+    
+    def __validate_max_partition_size(self, max_partition_size: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;max_partition_size&#39;,
+            parameter_value=max_partition_size,
+            expected_type=int,
+        )
+        if max_partition_size &lt;= 0:
+            raise ValueError(&#34;The parameter `max_partition_size` cannot be &lt;= 0&#34;)
+        if max_partition_size &gt; self.__iterable_length:
+            raise ValueError(&#34;The parameter `max_partition_size` cannot be &gt; length of the iterable&#34;)
+        return None
+    
+    def __validate_num_partitions(self, num_partitions: int) -&gt; None:
+        raise_exception_if_invalid_type(
+            parameter_name=&#39;num_partitions&#39;,
+            parameter_value=num_partitions,
+            expected_type=int,
+        )
+        if num_partitions &lt;= 0:
+            raise ValueError(&#34;The parameter `num_partitions` cannot be &lt;= 0&#34;)
+        if num_partitions &gt; self.__iterable_length:
+            raise ValueError(&#34;The parameter `num_partitions` cannot be &gt; length of the iterable&#34;)
+        return None
+    
+    def sizes_by_max_partition_size(self, max_partition_size: int) -&gt; List[int]:
+        &#34;&#34;&#34;Returns list of sizes of each partition&#34;&#34;&#34;
+        self.__validate_max_partition_size(max_partition_size=max_partition_size)
+        num_full_partitions, last_partition_size = divmod(self.__iterable_length, max_partition_size)
+        if last_partition_size == 0:
+            return [max_partition_size] * num_full_partitions
+        return [max_partition_size] * num_full_partitions + [last_partition_size]
+    
+    def __sizes_by_fill_distribution(self, num_partitions: int) -&gt; List[int]:
+        full_partition_size, last_partition_size = divmod(self.__iterable_length, num_partitions)
+        if last_partition_size == 0:
+            return [full_partition_size] * num_partitions
+        sizes = [full_partition_size] * (num_partitions - 1)
+        sizes.insert(0, full_partition_size + last_partition_size)
+        return sizes
+    
+    def __sizes_by_uniform_distribution(self, num_partitions: int) -&gt; List[int]:
+        min_partition_size, num_residuals = divmod(self.__iterable_length, num_partitions)
+        return [min_partition_size + 1] * num_residuals + [min_partition_size] * (num_partitions - num_residuals)
+    
+    def sizes_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = &#39;uniform&#39;,
+        ) -&gt; List[int]:
+        &#34;&#34;&#34;
+        Returns list of sizes of each partition.
+        Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+        &#34;&#34;&#34;
+        self.__validate_num_partitions(num_partitions=num_partitions)
+        valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+        if distribution_method == &#39;fill&#39;:
+            return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
+        if distribution_method == &#39;uniform&#39;:
+            return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
+        raise ValueError(
+            f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
+        )
+    
+    def __compute_index_ranges_from_partition_sizes(
+            self,
+            partition_sizes: List[int],
+        ) -&gt; List[Tuple[int, int]]:
+        start_indices = [0] + list(np.cumsum(partition_sizes))
+        index_ranges = [(start_indices[idx], start_indices[idx+1]) for idx in range(len(start_indices) - 1)]
+        return index_ranges
+    
+    def index_ranges_by_max_partition_size(self, max_partition_size: int) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        &#34;&#34;&#34;
+        sizes = self.sizes_by_max_partition_size(max_partition_size=max_partition_size)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)
+    
+    def index_ranges_by_num_partitions(
+            self,
+            num_partitions: int,
+            distribution_method: Optional[str] = &#39;uniform&#39;,
+        ) -&gt; List[Tuple[int, int]]:
+        &#34;&#34;&#34;
+        Returns list of tuples of (start_index, end_index) that partition an iterable.
+        The indices are zero-based.
+        Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+        &#34;&#34;&#34;
+        sizes = self.sizes_by_num_partitions(num_partitions=num_partitions, distribution_method=distribution_method)
+        return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="pyutils.core.utils.Partitioner.index_ranges_by_max_partition_size"><code class="name flex">
+<span>def <span class="ident">index_ranges_by_max_partition_size</span></span>(<span>self, max_partition_size: int) ‑> List[Tuple[int, int]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of tuples of (start_index, end_index) that partition an iterable.
+The indices are zero-based.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def index_ranges_by_max_partition_size(self, max_partition_size: int) -&gt; List[Tuple[int, int]]:
+    &#34;&#34;&#34;
+    Returns list of tuples of (start_index, end_index) that partition an iterable.
+    The indices are zero-based.
+    &#34;&#34;&#34;
+    sizes = self.sizes_by_max_partition_size(max_partition_size=max_partition_size)
+    return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.utils.Partitioner.index_ranges_by_num_partitions"><code class="name flex">
+<span>def <span class="ident">index_ranges_by_num_partitions</span></span>(<span>self, num_partitions: int, distribution_method: Optional[str] = 'uniform') ‑> List[Tuple[int, int]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of tuples of (start_index, end_index) that partition an iterable.
+The indices are zero-based.
+Options for <code>distribution_method</code> are: ['fill', 'uniform']. Default: 'uniform'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def index_ranges_by_num_partitions(
+        self,
+        num_partitions: int,
+        distribution_method: Optional[str] = &#39;uniform&#39;,
+    ) -&gt; List[Tuple[int, int]]:
+    &#34;&#34;&#34;
+    Returns list of tuples of (start_index, end_index) that partition an iterable.
+    The indices are zero-based.
+    Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+    &#34;&#34;&#34;
+    sizes = self.sizes_by_num_partitions(num_partitions=num_partitions, distribution_method=distribution_method)
+    return self.__compute_index_ranges_from_partition_sizes(partition_sizes=sizes)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.utils.Partitioner.sizes_by_max_partition_size"><code class="name flex">
+<span>def <span class="ident">sizes_by_max_partition_size</span></span>(<span>self, max_partition_size: int) ‑> List[int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of sizes of each partition</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sizes_by_max_partition_size(self, max_partition_size: int) -&gt; List[int]:
+    &#34;&#34;&#34;Returns list of sizes of each partition&#34;&#34;&#34;
+    self.__validate_max_partition_size(max_partition_size=max_partition_size)
+    num_full_partitions, last_partition_size = divmod(self.__iterable_length, max_partition_size)
+    if last_partition_size == 0:
+        return [max_partition_size] * num_full_partitions
+    return [max_partition_size] * num_full_partitions + [last_partition_size]</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.utils.Partitioner.sizes_by_num_partitions"><code class="name flex">
+<span>def <span class="ident">sizes_by_num_partitions</span></span>(<span>self, num_partitions: int, distribution_method: Optional[str] = 'uniform') ‑> List[int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of sizes of each partition.
+Options for <code>distribution_method</code> are: ['fill', 'uniform']. Default: 'uniform'</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sizes_by_num_partitions(
+        self,
+        num_partitions: int,
+        distribution_method: Optional[str] = &#39;uniform&#39;,
+    ) -&gt; List[int]:
+    &#34;&#34;&#34;
+    Returns list of sizes of each partition.
+    Options for `distribution_method` are: [&#39;fill&#39;, &#39;uniform&#39;]. Default: &#39;uniform&#39;
+    &#34;&#34;&#34;
+    self.__validate_num_partitions(num_partitions=num_partitions)
+    valid_distribution_method_options = [&#39;fill&#39;, &#39;uniform&#39;]
+    if distribution_method == &#39;fill&#39;:
+        return self.__sizes_by_fill_distribution(num_partitions=num_partitions)
+    if distribution_method == &#39;uniform&#39;:
+        return self.__sizes_by_uniform_distribution(num_partitions=num_partitions)
+    raise ValueError(
+        f&#34;Got an invalid option for `distribution_method`: &#39;{distribution_method}&#39;. Expected one of {valid_distribution_method_options}&#34;
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -559,10 +923,9 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="pyutils.core.utils.commafy_number" href="#pyutils.core.utils.commafy_number">commafy_number</a></code></li>
+<li><code><a title="pyutils.core.utils.cumulative_aggregate" href="#pyutils.core.utils.cumulative_aggregate">cumulative_aggregate</a></code></li>
 <li><code><a title="pyutils.core.utils.get_max_of_abs_values" href="#pyutils.core.utils.get_max_of_abs_values">get_max_of_abs_values</a></code></li>
 <li><code><a title="pyutils.core.utils.get_min_of_abs_values" href="#pyutils.core.utils.get_min_of_abs_values">get_min_of_abs_values</a></code></li>
-<li><code><a title="pyutils.core.utils.get_partition_index_ranges" href="#pyutils.core.utils.get_partition_index_ranges">get_partition_index_ranges</a></code></li>
-<li><code><a title="pyutils.core.utils.get_partition_sizes" href="#pyutils.core.utils.get_partition_sizes">get_partition_sizes</a></code></li>
 <li><code><a title="pyutils.core.utils.get_random_choice_except" href="#pyutils.core.utils.get_random_choice_except">get_random_choice_except</a></code></li>
 <li><code><a title="pyutils.core.utils.get_timetaken_dictionary" href="#pyutils.core.utils.get_timetaken_dictionary">get_timetaken_dictionary</a></code></li>
 <li><code><a title="pyutils.core.utils.get_timetaken_fstring" href="#pyutils.core.utils.get_timetaken_fstring">get_timetaken_fstring</a></code></li>
@@ -574,6 +937,19 @@ it to a string (to retain the exact number of decimal places desired).</p></div>
 <li><code><a title="pyutils.core.utils.round_off_as_string" href="#pyutils.core.utils.round_off_as_string">round_off_as_string</a></code></li>
 <li><code><a title="pyutils.core.utils.string_to_int_or_float" href="#pyutils.core.utils.string_to_int_or_float">string_to_int_or_float</a></code></li>
 <li><code><a title="pyutils.core.utils.stringify_list_of_nums" href="#pyutils.core.utils.stringify_list_of_nums">stringify_list_of_nums</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="pyutils.core.utils.Partitioner" href="#pyutils.core.utils.Partitioner">Partitioner</a></code></h4>
+<ul class="">
+<li><code><a title="pyutils.core.utils.Partitioner.index_ranges_by_max_partition_size" href="#pyutils.core.utils.Partitioner.index_ranges_by_max_partition_size">index_ranges_by_max_partition_size</a></code></li>
+<li><code><a title="pyutils.core.utils.Partitioner.index_ranges_by_num_partitions" href="#pyutils.core.utils.Partitioner.index_ranges_by_num_partitions">index_ranges_by_num_partitions</a></code></li>
+<li><code><a title="pyutils.core.utils.Partitioner.sizes_by_max_partition_size" href="#pyutils.core.utils.Partitioner.sizes_by_max_partition_size">sizes_by_max_partition_size</a></code></li>
+<li><code><a title="pyutils.core.utils.Partitioner.sizes_by_num_partitions" href="#pyutils.core.utils.Partitioner.sizes_by_num_partitions">sizes_by_num_partitions</a></code></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -47,10 +47,7 @@ from pyutils.core.type_annotations import (
     Number,
     NumberOrString,
 )
-from pyutils.core.utils import (
-    get_partition_index_ranges,
-    get_partition_sizes,
-)
+from pyutils.core.utils import Partitioner
 
 
 def get_mapping_between_columns(
@@ -266,9 +263,9 @@ def add_partitioning_column(
     Returns DataFrame with an additional column containing the partition number.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    partition_sizes = get_partition_sizes(
-        length_of_iterable=len(df),
+    partition_sizes = Partitioner(iterable_length=len(df)).sizes_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method=&#39;uniform&#39;,
     )
     partition_column_values = []
     for idx, partition_size in enumerate(partition_sizes):
@@ -287,9 +284,9 @@ def partition_dataframe_by_num_partitions(
     Returns list of partitioned DataFrames.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(df),
+    partition_index_ranges = Partitioner(iterable_length=len(df)).index_ranges_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method=&#39;uniform&#39;,
     )
     return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]
 
@@ -513,9 +510,9 @@ Returns DataFrame with an additional column containing the partition number.</p>
     Returns DataFrame with an additional column containing the partition number.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    partition_sizes = get_partition_sizes(
-        length_of_iterable=len(df),
+    partition_sizes = Partitioner(iterable_length=len(df)).sizes_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method=&#39;uniform&#39;,
     )
     partition_column_values = []
     for idx, partition_size in enumerate(partition_sizes):
@@ -749,9 +746,9 @@ Returns list of partitioned DataFrames.</p></div>
     Returns list of partitioned DataFrames.
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    partition_index_ranges = get_partition_index_ranges(
-        length_of_iterable=len(df),
+    partition_index_ranges = Partitioner(iterable_length=len(df)).index_ranges_by_num_partitions(
         num_partitions=num_partitions,
+        distribution_method=&#39;uniform&#39;,
     )
     return [df.iloc[idx_start : idx_end] for idx_start, idx_end in partition_index_ranges]</code></pre>
 </details>
