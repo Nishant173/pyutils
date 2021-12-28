@@ -23,7 +23,7 @@ def raise_exception_if_invalid_option(
     ) -> None:
     """Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None"""
     if option_value not in valid_option_values:
-        raise ValueError(f"Expected `{option_name}` to be in {valid_option_values}, but got {option_value}")
+        raise InvalidOptionError(f"Expected `{option_name}` to be in {valid_option_values}, but got {option_value}")
     return None
 
 
