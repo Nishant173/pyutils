@@ -26,7 +26,10 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def __raise_error_if_num_chars_is_negative(num_chars: int) -&gt; None:
+<pre><code class="python">from typing import List
+
+
+def __raise_error_if_num_chars_is_negative(num_chars: int) -&gt; None:
     if num_chars &lt; 0:
         raise ValueError(f&#34;Expected `num_chars` to be &gt;= 0, but got {num_chars}&#34;)
     return None
@@ -49,7 +52,28 @@ def remove_first_n_characters(text: str, num_chars: int) -&gt; str:
 
 def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
     __raise_error_if_num_chars_is_negative(num_chars=num_chars)
-    return text[:-num_chars]</code></pre>
+    return text[:-num_chars]
+
+
+def remove_characters_at_indices(text: str, indices: List[int]) -&gt; str:
+    &#34;&#34;&#34;
+    Removes characters present at the given `indices` in the `text`.
+    Expects `indices` to be in range (0, n-1) where n is the length of the `text`.
+    Raises an IndexError if any of the given `indices` are out of bounds.
+    &#34;&#34;&#34;
+    if not indices:
+        return text
+    indices = sorted(list(set(indices)), reverse=True)
+    lowest_possible_index, highest_possible_index = 0, len(text) - 1 # Must not use negative indices
+    if indices[-1] &lt; lowest_possible_index or indices[0] &gt; highest_possible_index:
+        raise IndexError(
+            f&#34;Accepted index-range for the given text is ({lowest_possible_index}, {highest_possible_index}).&#34;
+            &#34; Cannot remove character at an index outside of this range.&#34;
+        )
+    list_of_chars = list(text)
+    for index in indices:
+        list_of_chars.pop(index)
+    return &#34;&#34;.join(list_of_chars)</code></pre>
 </details>
 </section>
 <section>
@@ -85,6 +109,38 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <pre><code class="python">def get_last_n_characters(text: str, num_chars: int) -&gt; str:
     __raise_error_if_num_chars_is_negative(num_chars=num_chars)
     return text[-num_chars:]</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.string_ops.remove_characters_at_indices"><code class="name flex">
+<span>def <span class="ident">remove_characters_at_indices</span></span>(<span>text: str, indices: List[int]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Removes characters present at the given <code>indices</code> in the <code>text</code>.
+Expects <code>indices</code> to be in range (0, n-1) where n is the length of the <code>text</code>.
+Raises an IndexError if any of the given <code>indices</code> are out of bounds.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove_characters_at_indices(text: str, indices: List[int]) -&gt; str:
+    &#34;&#34;&#34;
+    Removes characters present at the given `indices` in the `text`.
+    Expects `indices` to be in range (0, n-1) where n is the length of the `text`.
+    Raises an IndexError if any of the given `indices` are out of bounds.
+    &#34;&#34;&#34;
+    if not indices:
+        return text
+    indices = sorted(list(set(indices)), reverse=True)
+    lowest_possible_index, highest_possible_index = 0, len(text) - 1 # Must not use negative indices
+    if indices[-1] &lt; lowest_possible_index or indices[0] &gt; highest_possible_index:
+        raise IndexError(
+            f&#34;Accepted index-range for the given text is ({lowest_possible_index}, {highest_possible_index}).&#34;
+            &#34; Cannot remove character at an index outside of this range.&#34;
+        )
+    list_of_chars = list(text)
+    for index in indices:
+        list_of_chars.pop(index)
+    return &#34;&#34;.join(list_of_chars)</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.string_ops.remove_first_n_characters"><code class="name flex">
@@ -135,6 +191,7 @@ def remove_last_n_characters(text: str, num_chars: int) -&gt; str:
 <ul class="">
 <li><code><a title="pyutils.core.string_ops.get_first_n_characters" href="#pyutils.core.string_ops.get_first_n_characters">get_first_n_characters</a></code></li>
 <li><code><a title="pyutils.core.string_ops.get_last_n_characters" href="#pyutils.core.string_ops.get_last_n_characters">get_last_n_characters</a></code></li>
+<li><code><a title="pyutils.core.string_ops.remove_characters_at_indices" href="#pyutils.core.string_ops.remove_characters_at_indices">remove_characters_at_indices</a></code></li>
 <li><code><a title="pyutils.core.string_ops.remove_first_n_characters" href="#pyutils.core.string_ops.remove_first_n_characters">remove_first_n_characters</a></code></li>
 <li><code><a title="pyutils.core.string_ops.remove_last_n_characters" href="#pyutils.core.string_ops.remove_last_n_characters">remove_last_n_characters</a></code></li>
 </ul>
