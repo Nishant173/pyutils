@@ -45,35 +45,33 @@ def style_dataframe_conditionally(
         'column3': [np.random.randint(-40, 15) for _ in range(num_rows)],
         'column4': [np.random.randint(-5, 5) for _ in range(num_rows)],
     })
-    >>> style_dataframe_conditionally(
-        df_style_obj=df.style,
-        props=[
-            {
-                'row_conditions': (df['column1'] >= 10) | (df['column1'] % 2 == 0),
-                'column_subset': ['column1', 'column2'],
-                'styling_kwargs': {
-                    'background-color': 'green',
-                    'color': 'purple',
-                },
+    >>> props = [
+        {
+            'row_conditions': (df['column1'] >= 10) | (df['column1'] % 2 == 0),
+            'column_subset': ['column1', 'column2'],
+            'styling_kwargs': {
+                'background-color': 'green',
+                'color': 'purple',
             },
-            {
-                'row_conditions': (df['column3'] < 0),
-                'column_subset': None,
-                'styling_kwargs': {
-                    'background-color': 'blue',
-                    'color': 'orange',
-                },
+        },
+        {
+            'row_conditions': (df['column3'] < 0),
+            'column_subset': None,
+            'styling_kwargs': {
+                'background-color': 'blue',
+                'color': 'orange',
             },
-            {
-                'row_conditions': None,
-                'column_subset': ['column4'],
-                'styling_kwargs': {
-                    'background-color': 'grey',
-                    'color': 'red',
-                },
+        },
+        {
+            'row_conditions': None,
+            'column_subset': ['column4'],
+            'styling_kwargs': {
+                'background-color': 'grey',
+                'color': 'red',
             },
-        ],
-    )
+        },
+    ]
+    >>> style_dataframe_conditionally(df_style_obj=df.style, props=props)
     """
     df_styled = df_style_obj.__copy__()
     idx = pd.IndexSlice
