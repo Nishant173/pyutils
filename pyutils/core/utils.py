@@ -13,6 +13,13 @@ from pyutils.core.type_annotations import (
 )
 
 
+def print_docstring(obj: Any) -> None:
+    """Prints the doc-string (if available). Usually of a class, method or function."""
+    if hasattr(obj, "__doc__"):
+        print(obj.__doc__)
+    return None
+
+
 def is_none(value: Any) -> bool:
     return value is None
 
