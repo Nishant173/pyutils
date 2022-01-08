@@ -165,6 +165,30 @@ def convert_to_naive_timezone(dt_obj: datetime) -> datetime:
     return dt_obj_naive_tz
 
 
+def get_dates_between(
+        start_date: str,
+        end_date: str,
+        as_type: Optional[str] = 'string',
+    ) -> Union[List[datetime], List[date], List[str]]:
+    """
+    Returns list of dates between the given `start_date` and `end_date`.
+    Input date-string format must be 'yyyy-mm-dd'.
+    Options for `as_type` are: ['date', 'datetime', 'string']. Default: 'string'.
+    """
+    raise_exception_if_invalid_option(
+        option_name='as_type',
+        option_value=as_type,
+        valid_option_values=['date', 'datetime', 'string'],
+    )
+    period_objs = pd.date_range(start=start_date, end=end_date, freq='1D')
+    func_mapper = {
+        'date': lambda period_obj: period_to_datetime(period_obj=period_obj).date(),
+        'datetime': lambda period_obj: period_to_datetime(period_obj=period_obj),
+        'string': lambda period_obj: to_date_string(dt_obj=period_to_datetime(period_obj=period_obj)),
+    }
+    return list(map(func_mapper[as_type], period_objs))
+
+
 def offset_between_dates(
         start_date: str,
         end_date: str,
