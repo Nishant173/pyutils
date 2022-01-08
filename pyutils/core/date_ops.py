@@ -92,11 +92,7 @@ def convert_to_datetime(
         - minute (int): Ranges from 0 to 59, indicating minute of the hour
         - second (int): Ranges from 0 to 59, indicating second of the minute
     """
-    year, month, day = date_string.split('-')
-    dt_obj = datetime(
-        year=int(year),
-        month=int(month),
-        day=int(day),
+    dt_obj = parse_date_string(date_string=date_string).replace(
         hour=hour,
         minute=minute,
         second=second,
