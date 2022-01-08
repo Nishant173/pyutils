@@ -51,7 +51,7 @@ def raise_exception_if_invalid_option(
     ) -&gt; None:
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
-        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got `{option_value}`&#34;)
     return None
 
 
@@ -89,7 +89,7 @@ def raise_exception_if_invalid_type(
     ) -&gt; None:
     &#34;&#34;&#34;Raises a ValueError if the `option_value` given is an invalid option; otherwise returns None&#34;&#34;&#34;
     if option_value not in valid_option_values:
-        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got {option_value}&#34;)
+        raise InvalidOptionError(f&#34;Expected `{option_name}` to be in {valid_option_values}, but got `{option_value}`&#34;)
     return None</code></pre>
 </details>
 </dd>

@@ -73,35 +73,33 @@ def style_dataframe_conditionally(
         &#39;column3&#39;: [np.random.randint(-40, 15) for _ in range(num_rows)],
         &#39;column4&#39;: [np.random.randint(-5, 5) for _ in range(num_rows)],
     })
-    &gt;&gt;&gt; style_dataframe_conditionally(
-        df_style_obj=df.style,
-        props=[
-            {
-                &#39;row_conditions&#39;: (df[&#39;column1&#39;] &gt;= 10) | (df[&#39;column1&#39;] % 2 == 0),
-                &#39;column_subset&#39;: [&#39;column1&#39;, &#39;column2&#39;],
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;green&#39;,
-                    &#39;color&#39;: &#39;purple&#39;,
-                },
+    &gt;&gt;&gt; props = [
+        {
+            &#39;row_conditions&#39;: (df[&#39;column1&#39;] &gt;= 10) | (df[&#39;column1&#39;] % 2 == 0),
+            &#39;column_subset&#39;: [&#39;column1&#39;, &#39;column2&#39;],
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;green&#39;,
+                &#39;color&#39;: &#39;purple&#39;,
             },
-            {
-                &#39;row_conditions&#39;: (df[&#39;column3&#39;] &lt; 0),
-                &#39;column_subset&#39;: None,
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;blue&#39;,
-                    &#39;color&#39;: &#39;orange&#39;,
-                },
+        },
+        {
+            &#39;row_conditions&#39;: (df[&#39;column3&#39;] &lt; 0),
+            &#39;column_subset&#39;: None,
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;blue&#39;,
+                &#39;color&#39;: &#39;orange&#39;,
             },
-            {
-                &#39;row_conditions&#39;: None,
-                &#39;column_subset&#39;: [&#39;column4&#39;],
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;grey&#39;,
-                    &#39;color&#39;: &#39;red&#39;,
-                },
+        },
+        {
+            &#39;row_conditions&#39;: None,
+            &#39;column_subset&#39;: [&#39;column4&#39;],
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;grey&#39;,
+                &#39;color&#39;: &#39;red&#39;,
             },
-        ],
-    )
+        },
+    ]
+    &gt;&gt;&gt; style_dataframe_conditionally(df_style_obj=df.style, props=props)
     &#34;&#34;&#34;
     df_styled = df_style_obj.__copy__()
     idx = pd.IndexSlice
@@ -590,35 +588,33 @@ The ordering of the <code>props</code> matter i.e; if 5 props are given, the 4th
     'column3': [np.random.randint(-40, 15) for _ in range(num_rows)],
     'column4': [np.random.randint(-5, 5) for _ in range(num_rows)],
 })
-&gt;&gt;&gt; style_dataframe_conditionally(
-    df_style_obj=df.style,
-    props=[
-        {
-            'row_conditions': (df['column1'] &gt;= 10) | (df['column1'] % 2 == 0),
-            'column_subset': ['column1', 'column2'],
-            'styling_kwargs': {
-                'background-color': 'green',
-                'color': 'purple',
-            },
+&gt;&gt;&gt; props = [
+    {
+        'row_conditions': (df['column1'] &gt;= 10) | (df['column1'] % 2 == 0),
+        'column_subset': ['column1', 'column2'],
+        'styling_kwargs': {
+            'background-color': 'green',
+            'color': 'purple',
         },
-        {
-            'row_conditions': (df['column3'] &lt; 0),
-            'column_subset': None,
-            'styling_kwargs': {
-                'background-color': 'blue',
-                'color': 'orange',
-            },
+    },
+    {
+        'row_conditions': (df['column3'] &lt; 0),
+        'column_subset': None,
+        'styling_kwargs': {
+            'background-color': 'blue',
+            'color': 'orange',
         },
-        {
-            'row_conditions': None,
-            'column_subset': ['column4'],
-            'styling_kwargs': {
-                'background-color': 'grey',
-                'color': 'red',
-            },
+    },
+    {
+        'row_conditions': None,
+        'column_subset': ['column4'],
+        'styling_kwargs': {
+            'background-color': 'grey',
+            'color': 'red',
         },
-    ],
-)
+    },
+]
+&gt;&gt;&gt; style_dataframe_conditionally(df_style_obj=df.style, props=props)
 </code></pre></div>
 <details class="source">
 <summary>
@@ -645,35 +641,33 @@ The ordering of the <code>props</code> matter i.e; if 5 props are given, the 4th
         &#39;column3&#39;: [np.random.randint(-40, 15) for _ in range(num_rows)],
         &#39;column4&#39;: [np.random.randint(-5, 5) for _ in range(num_rows)],
     })
-    &gt;&gt;&gt; style_dataframe_conditionally(
-        df_style_obj=df.style,
-        props=[
-            {
-                &#39;row_conditions&#39;: (df[&#39;column1&#39;] &gt;= 10) | (df[&#39;column1&#39;] % 2 == 0),
-                &#39;column_subset&#39;: [&#39;column1&#39;, &#39;column2&#39;],
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;green&#39;,
-                    &#39;color&#39;: &#39;purple&#39;,
-                },
+    &gt;&gt;&gt; props = [
+        {
+            &#39;row_conditions&#39;: (df[&#39;column1&#39;] &gt;= 10) | (df[&#39;column1&#39;] % 2 == 0),
+            &#39;column_subset&#39;: [&#39;column1&#39;, &#39;column2&#39;],
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;green&#39;,
+                &#39;color&#39;: &#39;purple&#39;,
             },
-            {
-                &#39;row_conditions&#39;: (df[&#39;column3&#39;] &lt; 0),
-                &#39;column_subset&#39;: None,
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;blue&#39;,
-                    &#39;color&#39;: &#39;orange&#39;,
-                },
+        },
+        {
+            &#39;row_conditions&#39;: (df[&#39;column3&#39;] &lt; 0),
+            &#39;column_subset&#39;: None,
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;blue&#39;,
+                &#39;color&#39;: &#39;orange&#39;,
             },
-            {
-                &#39;row_conditions&#39;: None,
-                &#39;column_subset&#39;: [&#39;column4&#39;],
-                &#39;styling_kwargs&#39;: {
-                    &#39;background-color&#39;: &#39;grey&#39;,
-                    &#39;color&#39;: &#39;red&#39;,
-                },
+        },
+        {
+            &#39;row_conditions&#39;: None,
+            &#39;column_subset&#39;: [&#39;column4&#39;],
+            &#39;styling_kwargs&#39;: {
+                &#39;background-color&#39;: &#39;grey&#39;,
+                &#39;color&#39;: &#39;red&#39;,
             },
-        ],
-    )
+        },
+    ]
+    &gt;&gt;&gt; style_dataframe_conditionally(df_style_obj=df.style, props=props)
     &#34;&#34;&#34;
     df_styled = df_style_obj.__copy__()
     idx = pd.IndexSlice

@@ -120,11 +120,7 @@ def convert_to_datetime(
         - minute (int): Ranges from 0 to 59, indicating minute of the hour
         - second (int): Ranges from 0 to 59, indicating second of the minute
     &#34;&#34;&#34;
-    year, month, day = date_string.split(&#39;-&#39;)
-    dt_obj = datetime(
-        year=int(year),
-        month=int(month),
-        day=int(day),
+    dt_obj = parse_date_string(date_string=date_string).replace(
         hour=hour,
         minute=minute,
         second=second,
@@ -191,6 +187,30 @@ def convert_to_naive_timezone(dt_obj: datetime) -&gt; datetime:
     &#34;&#34;&#34;Converts datetime object to datetime object with a naive timezone&#34;&#34;&#34;
     dt_obj_naive_tz = dt_obj.replace(tzinfo=None)
     return dt_obj_naive_tz
+
+
+def get_dates_between(
+        start_date: str,
+        end_date: str,
+        as_type: Optional[str] = &#39;string&#39;,
+    ) -&gt; Union[List[datetime], List[date], List[str]]:
+    &#34;&#34;&#34;
+    Returns list of dates between the given `start_date` and `end_date`.
+    Input date-string format must be &#39;yyyy-mm-dd&#39;.
+    Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_option(
+        option_name=&#39;as_type&#39;,
+        option_value=as_type,
+        valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+    )
+    period_objs = pd.date_range(start=start_date, end=end_date, freq=&#39;1D&#39;)
+    func_mapper = {
+        &#39;date&#39;: lambda period_obj: period_to_datetime(period_obj=period_obj).date(),
+        &#39;datetime&#39;: lambda period_obj: period_to_datetime(period_obj=period_obj),
+        &#39;string&#39;: lambda period_obj: to_date_string(dt_obj=period_to_datetime(period_obj=period_obj)),
+    }
+    return list(map(func_mapper[as_type], period_objs))
 
 
 def offset_between_dates(
@@ -539,11 +559,7 @@ class SecondWiseBucketer:
         - minute (int): Ranges from 0 to 59, indicating minute of the hour
         - second (int): Ranges from 0 to 59, indicating second of the minute
     &#34;&#34;&#34;
-    year, month, day = date_string.split(&#39;-&#39;)
-    dt_obj = datetime(
-        year=int(year),
-        month=int(month),
-        day=int(day),
+    dt_obj = parse_date_string(date_string=date_string).replace(
         hour=hour,
         minute=minute,
         second=second,
@@ -580,6 +596,41 @@ class SecondWiseBucketer:
     dt_obj = datetime.now()
     ts_now = dt_obj.strftime(TIMESTAMP_INTEGER_FORMAT)
     return int(ts_now)</code></pre>
+</details>
+</dd>
+<dt id="pyutils.core.date_ops.get_dates_between"><code class="name flex">
+<span>def <span class="ident">get_dates_between</span></span>(<span>start_date: str, end_date: str, as_type: Optional[str] = 'string') ‑> Union[List[datetime.datetime], List[datetime.date], List[str]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns list of dates between the given <code>start_date</code> and <code>end_date</code>.
+Input date-string format must be 'yyyy-mm-dd'.
+Options for <code>as_type</code> are: ['date', 'datetime', 'string']. Default: 'string'.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_dates_between(
+        start_date: str,
+        end_date: str,
+        as_type: Optional[str] = &#39;string&#39;,
+    ) -&gt; Union[List[datetime], List[date], List[str]]:
+    &#34;&#34;&#34;
+    Returns list of dates between the given `start_date` and `end_date`.
+    Input date-string format must be &#39;yyyy-mm-dd&#39;.
+    Options for `as_type` are: [&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;]. Default: &#39;string&#39;.
+    &#34;&#34;&#34;
+    raise_exception_if_invalid_option(
+        option_name=&#39;as_type&#39;,
+        option_value=as_type,
+        valid_option_values=[&#39;date&#39;, &#39;datetime&#39;, &#39;string&#39;],
+    )
+    period_objs = pd.date_range(start=start_date, end=end_date, freq=&#39;1D&#39;)
+    func_mapper = {
+        &#39;date&#39;: lambda period_obj: period_to_datetime(period_obj=period_obj).date(),
+        &#39;datetime&#39;: lambda period_obj: period_to_datetime(period_obj=period_obj),
+        &#39;string&#39;: lambda period_obj: to_date_string(dt_obj=period_to_datetime(period_obj=period_obj)),
+    }
+    return list(map(func_mapper[as_type], period_objs))</code></pre>
 </details>
 </dd>
 <dt id="pyutils.core.date_ops.get_day_of_week"><code class="name flex">
@@ -1413,6 +1464,7 @@ Options for <code>as_type</code> are: ['datetime', 'string']. Default: 'string'.
 <li><code><a title="pyutils.core.date_ops.convert_to_datetime" href="#pyutils.core.date_ops.convert_to_datetime">convert_to_datetime</a></code></li>
 <li><code><a title="pyutils.core.date_ops.convert_to_naive_timezone" href="#pyutils.core.date_ops.convert_to_naive_timezone">convert_to_naive_timezone</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_current_timestamp_as_integer" href="#pyutils.core.date_ops.get_current_timestamp_as_integer">get_current_timestamp_as_integer</a></code></li>
+<li><code><a title="pyutils.core.date_ops.get_dates_between" href="#pyutils.core.date_ops.get_dates_between">get_dates_between</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_day_of_week" href="#pyutils.core.date_ops.get_day_of_week">get_day_of_week</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp" href="#pyutils.core.date_ops.get_random_timestamp">get_random_timestamp</a></code></li>
 <li><code><a title="pyutils.core.date_ops.get_random_timestamp_as_integer" href="#pyutils.core.date_ops.get_random_timestamp_as_integer">get_random_timestamp_as_integer</a></code></li>

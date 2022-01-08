@@ -41,6 +41,13 @@ from pyutils.core.type_annotations import (
 )
 
 
+def print_docstring(obj: Any) -&gt; None:
+    &#34;&#34;&#34;Prints the doc-string (if available). Usually of a class, method or function.&#34;&#34;&#34;
+    if hasattr(obj, &#34;__doc__&#34;):
+        print(obj.__doc__)
+    return None
+
+
 def is_none(value: Any) -&gt; bool:
     return value is None
 
@@ -631,6 +638,22 @@ Options for <code>method</code> are: ['sum', 'difference', 'product', 'division'
     return numbers</code></pre>
 </details>
 </dd>
+<dt id="pyutils.core.utils.print_docstring"><code class="name flex">
+<span>def <span class="ident">print_docstring</span></span>(<span>obj: Any) ‑> None</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Prints the doc-string (if available). Usually of a class, method or function.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def print_docstring(obj: Any) -&gt; None:
+    &#34;&#34;&#34;Prints the doc-string (if available). Usually of a class, method or function.&#34;&#34;&#34;
+    if hasattr(obj, &#34;__doc__&#34;):
+        print(obj.__doc__)
+    return None</code></pre>
+</details>
+</dd>
 <dt id="pyutils.core.utils.round_off_as_string"><code class="name flex">
 <span>def <span class="ident">round_off_as_string</span></span>(<span>number: Union[int, float], round_by: int) ‑> str</span>
 </code></dt>
@@ -965,6 +988,7 @@ Options for <code>distribution_method</code> are: ['fill', 'uniform']. Default: 
 <li><code><a title="pyutils.core.utils.is_none" href="#pyutils.core.utils.is_none">is_none</a></code></li>
 <li><code><a title="pyutils.core.utils.is_none_or_nan" href="#pyutils.core.utils.is_none_or_nan">is_none_or_nan</a></code></li>
 <li><code><a title="pyutils.core.utils.listify_string_of_nums" href="#pyutils.core.utils.listify_string_of_nums">listify_string_of_nums</a></code></li>
+<li><code><a title="pyutils.core.utils.print_docstring" href="#pyutils.core.utils.print_docstring">print_docstring</a></code></li>
 <li><code><a title="pyutils.core.utils.round_off_as_string" href="#pyutils.core.utils.round_off_as_string">round_off_as_string</a></code></li>
 <li><code><a title="pyutils.core.utils.string_to_int_or_float" href="#pyutils.core.utils.string_to_int_or_float">string_to_int_or_float</a></code></li>
 <li><code><a title="pyutils.core.utils.stringify_list_of_nums" href="#pyutils.core.utils.stringify_list_of_nums">stringify_list_of_nums</a></code></li>
