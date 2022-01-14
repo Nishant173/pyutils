@@ -208,20 +208,15 @@ def transform_datetime_columns(
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - func (callable): Callable Python function
-        - subset (list): Subset of &#39;datetime64&#39; columns to apply the function to (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    if subset:
-        for column in subset:
-            new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
-            df[new_column] = df[column].apply(func=func)
-    else:
-        columns_with_datetimes = data.select_dtypes(include=[&#39;datetime64&#39;]).columns.tolist()
-        for column in columns_with_datetimes:
-            new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
-            df[new_column] = df[column].apply(func=func)
+    subset = df.select_dtypes(include=[&#39;datetime64&#39;]).columns.tolist() if subset is None else subset
+    for column in subset:
+        new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
+        df[new_column] = df[column].apply(func=func)
     return df
 
 
@@ -237,14 +232,13 @@ def prettify_datetime_columns(
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - include_time (bool): Includes time element if set to True
-        - subset (list): Subset of datetime columns to prettify (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     &#34;&#34;&#34;
-    df = data.copy(deep=True)
     formatter = &#34;%d %B, %Y %I:%M %p&#34; if include_time else &#34;%d %B, %Y&#34;
     df = transform_datetime_columns(
-        data=df,
+        data=data,
         func=lambda dt_obj: dt_obj.strftime(formatter),
         subset=subset,
         column_prefix=column_prefix,
@@ -762,7 +756,7 @@ Returns list of partitioned DataFrames.</p></div>
 <ul>
 <li>data (DataFrame): Pandas DataFrame</li>
 <li>include_time (bool): Includes time element if set to True</li>
-<li>subset (list): Subset of datetime columns to prettify (optional)</li>
+<li>subset (list): Subset of date/datetime columns to apply the function to (optional)</li>
 <li>column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)</li>
 <li>column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)</li>
 </ul></div>
@@ -782,14 +776,13 @@ Returns list of partitioned DataFrames.</p></div>
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - include_time (bool): Includes time element if set to True
-        - subset (list): Subset of datetime columns to prettify (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     &#34;&#34;&#34;
-    df = data.copy(deep=True)
     formatter = &#34;%d %B, %Y %I:%M %p&#34; if include_time else &#34;%d %B, %Y&#34;
     df = transform_datetime_columns(
-        data=df,
+        data=data,
         func=lambda dt_obj: dt_obj.strftime(formatter),
         subset=subset,
         column_prefix=column_prefix,
@@ -1198,7 +1191,7 @@ Options for <code>casing_type</code>:
 <ul>
 <li>data (DataFrame): Pandas DataFrame</li>
 <li>func (callable): Callable Python function</li>
-<li>subset (list): Subset of 'datetime64' columns to apply the function to (optional)</li>
+<li>subset (list): Subset of date/datetime columns to apply the function to (optional)</li>
 <li>column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)</li>
 <li>column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)</li>
 </ul></div>
@@ -1218,20 +1211,15 @@ Options for <code>casing_type</code>:
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - func (callable): Callable Python function
-        - subset (list): Subset of &#39;datetime64&#39; columns to apply the function to (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     &#34;&#34;&#34;
     df = data.copy(deep=True)
-    if subset:
-        for column in subset:
-            new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
-            df[new_column] = df[column].apply(func=func)
-    else:
-        columns_with_datetimes = data.select_dtypes(include=[&#39;datetime64&#39;]).columns.tolist()
-        for column in columns_with_datetimes:
-            new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
-            df[new_column] = df[column].apply(func=func)
+    subset = df.select_dtypes(include=[&#39;datetime64&#39;]).columns.tolist() if subset is None else subset
+    for column in subset:
+        new_column = f&#34;{column_prefix}{column}{column_suffix}&#34;
+        df[new_column] = df[column].apply(func=func)
     return df</code></pre>
 </details>
 </dd>
