@@ -180,20 +180,15 @@ def transform_datetime_columns(
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - func (callable): Callable Python function
-        - subset (list): Subset of 'datetime64' columns to apply the function to (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     """
     df = data.copy(deep=True)
-    if subset:
-        for column in subset:
-            new_column = f"{column_prefix}{column}{column_suffix}"
-            df[new_column] = df[column].apply(func=func)
-    else:
-        columns_with_datetimes = data.select_dtypes(include=['datetime64']).columns.tolist()
-        for column in columns_with_datetimes:
-            new_column = f"{column_prefix}{column}{column_suffix}"
-            df[new_column] = df[column].apply(func=func)
+    subset = df.select_dtypes(include=['datetime64']).columns.tolist() if subset is None else subset
+    for column in subset:
+        new_column = f"{column_prefix}{column}{column_suffix}"
+        df[new_column] = df[column].apply(func=func)
     return df
 
 
@@ -209,14 +204,13 @@ def prettify_datetime_columns(
     Parameters:
         - data (DataFrame): Pandas DataFrame
         - include_time (bool): Includes time element if set to True
-        - subset (list): Subset of datetime columns to prettify (optional)
+        - subset (list): Subset of date/datetime columns to apply the function to (optional)
         - column_prefix (str): Prefix to add to column name, if you want to create new columns (optional)
         - column_suffix (str): Suffix to add to column name, if you want to create new columns (optional)
     """
-    df = data.copy(deep=True)
     formatter = "%d %B, %Y %I:%M %p" if include_time else "%d %B, %Y"
     df = transform_datetime_columns(
-        data=df,
+        data=data,
         func=lambda dt_obj: dt_obj.strftime(formatter),
         subset=subset,
         column_prefix=column_prefix,
