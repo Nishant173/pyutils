@@ -5,6 +5,8 @@ from setuptools import find_packages, setup
 # Constants
 PACKAGE_NAME = "py3utilities"
 PACKAGE_VERSION = "0.0.1"
+AUTHOR_NAME = "Nishant Rao"
+AUTHOR_EMAIL_ID = "nishant.rao173@gmail.com"
 FILEPATH_TO_README = os.path.join(os.path.abspath(os.path.dirname(__file__)), "README.md")
 
 # Requirements
@@ -25,8 +27,8 @@ setup(
     version=PACKAGE_VERSION,
     description="Library having Python utility code",
     long_description=long_description,
-    author="Nishant Rao",
-    author_email="nishant.rao173@gmail.com",
+    author=AUTHOR_NAME,
+    author_email=AUTHOR_EMAIL_ID,
     url="https://github.com/Nishant173/pyutils/",
     packages=find_packages(where="."),
     include_package_data=True,

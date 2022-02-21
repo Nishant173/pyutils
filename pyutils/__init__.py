@@ -4,9 +4,13 @@ from pyutils import (
     data_wrangler,
     frameworks,
 )
-from setup import PACKAGE_VERSION
+from setup import (
+    AUTHOR_EMAIL_ID,
+    AUTHOR_NAME,
+    PACKAGE_VERSION,
+)
 
 
-__author__ = "Nishant Rao"
-__email__ = "nishant.rao173@gmail.com"
+__author__ = AUTHOR_NAME
+__email__ = AUTHOR_EMAIL_ID
 __version__ = PACKAGE_VERSION
